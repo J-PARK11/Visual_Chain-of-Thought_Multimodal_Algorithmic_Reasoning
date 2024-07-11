@@ -181,7 +181,7 @@ def V_COT(args, dataloader):
                 puzzle_save_path = os.path.join(args.save_root, 'puzzle', str(int(pids)), img_name)
                 plt.figure(figsize=(6,6))
                 plt.suptitle(f'V-COT Reasoning: "{img_name}"')
-                plt.imshow(im[iter][0])
+                plt.imshow(im[iter])
                 plt.axis('off')
                 plt.savefig(puzzle_save_path)
                 plt.clf()
