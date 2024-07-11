@@ -1,0 +1,242 @@
+{
+    "puzzle_1_e_1.png": {
+        "Question": "Which object is linked to the hat? Options: A=flower B=disk C=book D=drink E=ball",
+        "exp1": "A=flower",
+        "exp2": "A=flower.",
+        "exp3": "A=flower.",
+        "exp4": "A=flower.",
+        "exp5": "A=flower.",
+        "GT_option": "A",
+        "GT_value": "flower"
+    },
+    "puzzle_1_e_2.png": {
+        "Question": "What object is connected to the writing utensil? Options: A=umbrella B=bird C=ball D=blade E=disk",
+        "exp1": "E=disk",
+        "exp2": "E=disk is connected to the writing utensil.",
+        "exp3": "B",
+        "exp4": "A=umbrella.",
+        "exp5": "A=umbrella.",
+        "GT_option": "B",
+        "GT_value": "bird"
+    },
+    "puzzle_1_e_3.png": {
+        "Question": "Which object is linked to the disk? Options: A=hat B=book C=writing utensil D=umbrella E=ball",
+        "exp1": "D=umbrella",
+        "exp2": "A=hat.",
+        "exp3": "B=book.",
+        "exp4": "B=book.",
+        "exp5": "B=book.",
+        "GT_option": "D",
+        "GT_value": "umbrella"
+    },
+    "puzzle_2_e_1.png": {
+        "Question": "In the picture, there are different shapes with different numbers of edges. How many shapes that have six edges are there? Options: A=5 B=2 C=3 D=4 E=1",
+        "exp1": "D=4",
+        "exp2": "I counted the number of shapes with six edges.\nThere are 3 shapes with six edges.\nSo, the answer is C.",
+        "exp3": "D=4.",
+        "exp4": "A.",
+        "exp5": "A.",
+        "GT_option": "E",
+        "GT_value": "1"
+    },
+    "puzzle_2_e_2.png": {
+        "Question": "In the image, there are different shapes with different numbers of edges. How many shapes that have 5 edges are there? Options: A=1 B=7 C=5 D=6 E=4",
+        "exp1": "B.",
+        "exp2": "D=6.",
+        "exp3": "D=6.",
+        "exp4": "A.",
+        "exp5": "A.",
+        "GT_option": "C",
+        "GT_value": "5"
+    },
+    "puzzle_2_e_3.png": {
+        "Question": "In the illustration, there are different shapes with different numbers of edges. How many shapes that have 5 edges are there? Options: A=4 B=6 C=1 D=2 E=3",
+        "exp1": "D=2.",
+        "exp2": "I counted the number of shapes with 5 edges in the image.\nThere are 2 shapes with 5 edges.\nSo, the answer is D.",
+        "exp3": "D=2.",
+        "exp4": "A.",
+        "exp5": "A.",
+        "GT_option": "E",
+        "GT_value": "3"
+    },
+    "puzzle_6_e_1.png": {
+        "Question": "Four different numbers from 57, 60, 83, 94, and 97 are used, one in each polygon, so that the equality is correct. Each of the used numbers can be used more than once. Which number is not used? Options: A=60 B=83 C=97 D=57 E=94",
+        "exp1": "D=57",
+        "exp2": "D=57.",
+        "exp3": "D=57",
+        "exp4": "1. The question is asking which number is not used in the equation.\n2. To find the result of the equation, we need to determine which number is used in each polygon.\n3. The numbers used in the equation are 57, 60, 83, 94, and 97.\n4. Since each number can be used more than once, we can rearrange the numbers to find the correct equation.\n5. The correct equation is 57 + 60 + 83 + 94 + 97 = 391.\n6. Therefore, the number that is not used in the equation is 97.",
+        "exp5": "D=57.",
+        "GT_option": "B",
+        "GT_value": "83"
+    },
+    "puzzle_6_e_2.png": {
+        "Question": "Each number from 13, 29, 46, 75, and 92 can be used more than once (one in each polygon) such that the equality is correct. A total of four different numbers are used. Which number is not used? Options: A=29 B=13 C=46 D=92 E=75",
+        "exp1": "B=13",
+        "exp2": "Let's think through this step-by-step:\nWe know that each number from 13, 29, 46, 75, and 92 can be used more than once (one in each polygon) such that the equality is correct.\nTo find the number that is not used, we can list out the numbers and see which one is missing:\n13, 29, 46, 75, 92\nThe number that is not used is 13.\nSo, the answer is B=13.",
+        "exp3": "B=13.",
+        "exp4": "1. The question is asking for the number that is not used in the equation.\n2. The equation is looking for four different numbers that can be used in each polygon to make the equation correct.\n3. The numbers 13, 29, 46, 75, and 92 are all used in the equation.\n4. Therefore, the number that is not used is E=75.",
+        "exp5": "B=13.",
+        "GT_option": "B",
+        "GT_value": "13"
+    },
+    "puzzle_6_e_3.png": {
+        "Question": "The problem requires the use of four different numbers from 31, 51, 53, 75, and 95, one in each polygon, such that the equality is correct. Each number can be used more than once. Which number is not used? Options: A=31 B=53 C=75 D=51 E=95",
+        "exp1": "D=51",
+        "exp2": "Let's analyze the problem step-by-step:\n\n1. We have five numbers to choose from: 31, 51, 53, 75, and 95.\n2. We need to use one number in each polygon, so we need to choose four different numbers.\n3. The numbers must be used in such a way that the equality is correct.\n\nNow let's see which number is not used:\n\n- We can use 31 in the first triangle.\n- We can use 51 in the second triangle.\n- We can use 53 in the third triangle.\n- We can use 75 in the fourth triangle.\n\nNow, we have used all the numbers except for 95. Therefore, 95 is the number that is not used.",
+        "exp3": "D=51",
+        "exp4": "The answer is E=95.",
+        "exp5": "B=53.",
+        "GT_option": "B",
+        "GT_value": "53"
+    },
+    "puzzle_7_e_1.png": {
+        "Question": "In an imaginary virtual world, for 1 medal, you can trade 3 marine animals (top of the figure). For 1 marine animal, you can get 2 locks (bottom of the figure). How many lock (or locks) can you get for 1 medal? Options: A=5 B=6 C=3 D=2 E=9",
+        "exp1": "B",
+        "exp2": "B=6.",
+        "exp3": "B",
+        "exp4": "B=6",
+        "exp5": "D=2",
+        "GT_option": "B",
+        "GT_value": "6"
+    },
+    "puzzle_7_e_2.png": {
+        "Question": "In an imaginary virtual world, you can get 3 mailboxes for 1 ball (top of the figure), and get 1 mailbox for 2 umbrellas (bottom of the figure). How many umbrella (or umbrellas) can you get for 2 balls? Options: A=12 B=10 C=16 D=9 E=13",
+        "exp1": "D=9",
+        "exp2": "D=9.",
+        "exp3": "D=9",
+        "exp4": "D=9.",
+        "exp5": "D=9.",
+        "GT_option": "A",
+        "GT_value": "12"
+    },
+    "puzzle_7_e_3.png": {
+        "Question": "In an imaginary virtual world, for 2 flowers, you can trade 3 writing utensils (top of the figure). You can also get 1 writing utensil for 2 locks (bottom of the figure). How many lock (or locks) can you get for 1 flower? Options: A=3 B=2 C=5 D=1 E=6",
+        "exp1": "D=1",
+        "exp2": "D=1.",
+        "exp3": "B",
+        "exp4": "D=1.",
+        "exp5": "D=1.",
+        "GT_option": "A",
+        "GT_value": "3"
+    },
+    "puzzle_17_e_1.png": {
+        "Question": "A man cuts a sheet of paper through the red line after he folds it 2 times through the dashed lines. The number of pieces of paper he ends up with is: Options: A=5 B=3 C=7 D=6 E=2",
+        "exp1": "B=3",
+        "exp2": "E=2\nThe man cuts the sheet of paper through the red line, so he ends up with 2 pieces of paper.",
+        "exp3": "B=3.",
+        "exp4": "B=3.",
+        "exp5": "B=3.",
+        "GT_option": "B",
+        "GT_value": "3"
+    },
+    "puzzle_17_e_2.png": {
+        "Question": "After folding a sheet of paper 2 times through the dashed lines, a man cuts it through the red line as shown. The number of pieces of paper he ends up with is: Options: A=2 B=6 C=9 D=7 E=5",
+        "exp1": "B=6",
+        "exp2": "E=5\nThe man cuts the paper through the red line, which divides it into two equal parts. So, he ends up with 2 pieces of paper.",
+        "exp3": "B",
+        "exp4": "B=6.",
+        "exp5": "B=6.",
+        "GT_option": "E",
+        "GT_value": "5"
+    },
+    "puzzle_17_e_3.png": {
+        "Question": "A man folds a sheet of paper 2 times through the dashed lines and then cuts it through the red line as shown. How many pieces of paper does he end up with? Options: A=3 B=5 C=2 D=6 E=4",
+        "exp1": "E=4",
+        "exp2": "E=4\nThe man ends up with 4 pieces of paper.",
+        "exp3": "E=4",
+        "exp4": "E=4.",
+        "exp5": "E=4.",
+        "GT_option": "C",
+        "GT_value": "2"
+    },
+    "puzzle_19_e_1.png": {
+        "Question": "How many ways are there for the feline to reach the bird if the feline can only move horizontally or vertically towards the bird in the grid? Options: A=6 B=13 C=12 D=10 E=9",
+        "exp1": "A=6",
+        "exp2": "B=13.",
+        "exp3": "B=13",
+        "exp4": "B=13.",
+        "exp5": "A=6.",
+        "GT_option": "D",
+        "GT_value": "10"
+    },
+    "puzzle_19_e_2.png": {
+        "Question": "In how many ways can the bird reach the monkey given that the bird can only move horizontally or vertically towards the monkey in the grid? Options: A=9 B=5 C=2 D=6 E=8",
+        "exp1": "A",
+        "exp2": "D=6\nThe bird can move up 2 spaces, left 2 spaces, up 1 space, left 1 space, up 1 space, and left 1 space.",
+        "exp3": "B",
+        "exp4": "B.",
+        "exp5": "D=6.",
+        "GT_option": "D",
+        "GT_value": "6"
+    },
+    "puzzle_19_e_3.png": {
+        "Question": "A monkey can only move horizontally or vertically towards a bird in the grid. How many ways are there for the monkey to reach the bird? Options: A=10 B=7 C=3 D=6 E=9",
+        "exp1": "D=6",
+        "exp2": "D=6.",
+        "exp3": "D=6",
+        "exp4": "D=6.",
+        "exp5": "D=6.",
+        "GT_option": "D",
+        "GT_value": "6"
+    },
+    "puzzle_40_e_1.png": {
+        "Question": "A man built the figure shown in the image by using equal small squares. What is the least number of equal small squares he should add to the image in order to obtain a fully filled larger square? Options: A=18 B=16 C=12 D=20 E=17",
+        "exp1": "B=16",
+        "exp2": "To determine the least number of equal small squares needed to obtain a fully filled larger square, we need to find the difference between the number of squares in the current image and the number of squares in a fully filled larger square.\n\nThe current image has 6 squares (2 x 3). A fully filled larger square would have 9 squares (3 x 3).\n\nThe difference between the number of squares in the current image and the number of squares in a fully filled larger square is:\n9 (fully filled larger square) - 6 (current image) = 3\n\nSo, the man should add 3 equal small squares to the image in order to obtain a fully filled larger square.",
+        "exp3": "C=12.",
+        "exp4": "The answer is B",
+        "exp5": "The answer is D=20.",
+        "GT_option": "B",
+        "GT_value": "16"
+    },
+    "puzzle_40_e_2.png": {
+        "Question": "A man built the figure shown in the picture by using equal small squares. What is the least number of equal small squares he should add to the picture in order to obtain a fully filled larger square? Options: A=9 B=13 C=14 D=10 E=12",
+        "exp1": "B=13",
+        "exp2": "To determine the least number of equal small squares needed to obtain a fully filled larger square, we need to analyze the current arrangement of squares and identify the missing squares.\n\nThe current arrangement of squares forms a 3x3 square. To obtain a fully filled larger square, we need to add squares to the edges of the current square.\n\nLet's analyze the edges:\n\n1. Top edge: There are 2 missing squares.\n2. Bottom edge: There are 2 missing squares.\n3. Left edge: There are 2 missing squares.\n4. Right edge: There are 2 missing squares.\n\nNow, let's compare the options:\n\nA. 9 squares: This option would add 9 squares, which is more than the required 8 squares.\nB. 13 squares: This option would add 13 squares, which is more than the required 8 squares.\nC. 14 squares: This option would add 14 squares, which is more than the required 8 squares.\nD. 10 squares: This option would add 10 squares, which is more than the required 8 squares.\nE. 12 squares: This option would add 12 squares, which is more than the required 8 squares.\n\nBased on the analysis, none of the options provide the least number of equal small squares needed to obtain a fully filled larger square.\n\nTherefore, the correct answer is:\n\nA. 9 squares.",
+        "exp3": "B=13.",
+        "exp4": "The answer is E=12.",
+        "exp5": "The answer is E=12.",
+        "GT_option": "D",
+        "GT_value": "10"
+    },
+    "puzzle_40_e_3.png": {
+        "Question": "A man used equal small squares to build the figure shown in the picture. How many number of equal small squares he should add to the picture at least to obtain a fully filled larger square? Options: A=7 B=9 C=6 D=11 E=8",
+        "exp1": "B=9",
+        "exp2": "To solve this problem, we need to determine the number of equal small squares needed to fill a larger square.\n\nLet's analyze the given image:\n\nThe image shows a green cross with squares. The cross has 4 squares on each side, making a total of 16 squares.\n\nNow, let's calculate the number of squares needed to fill a larger square:\n\nA larger square has 8 squares on each side, making a total of 64 squares.\n\nTo fill a larger square, we need to add 64 - 16 = 48 more squares.\n\nTherefore, the man should add 48 equal small squares to the picture at least to obtain a fully filled larger square.\n\nThe answer is B=9.",
+        "exp3": "B=9.",
+        "exp4": "The answer is B=9.",
+        "exp5": "The answer is B=9.",
+        "GT_option": "A",
+        "GT_value": "7"
+    },
+    "puzzle_77_0.png": {
+        "Question": "Which figure on the right matches with the left, if we invert the colors?  Options: A=A B=B C=C D=D E=E",
+        "exp1": "D=D",
+        "exp2": "No.",
+        "exp3": "D=D.",
+        "exp4": "D.",
+        "exp5": "D.",
+        "GT_option": "C",
+        "GT_value": "C"
+    },
+    "puzzle_77_1.png": {
+        "Question": "Which cartoon matches with the given cartoon on the left if we invert colors?  Options: A=A B=B C=C D=D E=E",
+        "exp1": "A=B B=A C=C D=D E=E",
+        "exp2": "To solve this problem, I compared the colors of the cartoons on the left and right. I noticed that the colors on the left are the opposite of the colors on the right. Therefore, I matched the cartoons based on their colors.",
+        "exp3": "D=D",
+        "exp4": "D.",
+        "exp5": "D.",
+        "GT_option": "D",
+        "GT_value": "D"
+    },
+    "puzzle_77_2.png": {
+        "Question": "Which cartoon matches with the given cartoon on the left if we invert colors?  Options: A=A B=B C=C D=D E=E",
+        "exp1": "A=E B=D C=C D=A E=B",
+        "exp2": "D=D.",
+        "exp3": "D=D",
+        "exp4": "D.",
+        "exp5": "D.",
+        "GT_option": "D",
+        "GT_value": "D"
+    }
+}

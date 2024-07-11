@@ -1,0 +1,194 @@
+{
+    "puzzle_1_e_1.png": {
+        "Question": "Which object is linked to the hat? Options: A=flower B=disk C=book D=drink E=ball",
+        "GT_option": "A",
+        "GT_value": "flower",
+        "Reasoning_Step": "1. Where is the hat located in the image?\n2. How many lines are connected to the hat?\n3. What object is the line connected to the hat?",
+        "Answer_Sheet": "1. Where is the hat located in the image?: bottom right of the image.\n2. How many lines are connected to the hat?: 1\n3. What object is the line connected to the hat?"
+    },
+
+    "puzzle_1_e_2.png": {
+        "Question": "What object is connected to the writing utensil? Options: A=umbrella B=bird C=ball D=blade E=disk",
+        "GT_option": "B",
+        "GT_value": "bird",
+        "Reasoning_Step": "1. Where is the utensil located in the image?\n2. How many lines are connected to the utensil?\n3. What object is the line connected to the utensil?",
+        "Answer_Sheet": "1. Where is the utensil located in the image?: top left of the image.\n2. How many lines are connected to the utensil?: 1\n3. What object is the line connected to the utensil?"
+    },
+
+    "puzzle_1_e_3.png": {
+        "Question": "Which object is linked to the disk? Options: A=hat B=book C=writing utensil D=umbrella E=ball",
+        "GT_option": "D",
+        "GT_value": "umbrella",
+        "Reasoning_Step": "1. Where is the disk located in the image?\n2. How many lines are connected to the disk?\n3. What object is the line connected to the disk?",
+        "Answer_Sheet": "1. Where is the disk located in the image?: top right of the image.\n2. How many lines are connected to the disk?: 1\n3. What object is the line connected to the disk?"
+    },
+
+    "puzzle_2_e_1.png": {
+        "Question": "In the picture, there are different shapes with different numbers of edges. How many shapes that have six edges are there? Options: A=5 B=2 C=3 D=4 E=1",
+        "GT_option": "E",
+        "GT_value": 1,
+        "Reasoning_Step": "1. How many figures are there in total?\n2. How many of these shapes have 6 edges?",
+        "Answer_Sheet": "1. How many figures are there in total?: 13\n2. How many of these shapes have 6 edges?"
+    },
+
+    "puzzle_2_e_2.png": {
+        "Question": "In the image, there are different shapes with different numbers of edges. How many shapes that have 5 edges are there? Options: A=1 B=7 C=5 D=6 E=4",
+        "GT_option": "C",
+        "GT_value": "5",
+        "Reasoning_Step": "1. How many figures are there in total?\n2. How many of these shapes have 5 edges?",
+        "Answer_Sheet": "1. How many figures are there in total?: 14\n2. How many of these shapes have 5 edges?"
+    },
+
+    "puzzle_2_e_3.png": {
+        "Question": "In the illustration, there are different shapes with different numbers of edges. How many shapes that have 5 edges are there? Options: A=4 B=6 C=1 D=2 E=3",
+        "GT_option": "E",
+        "GT_value": "3",
+        "Reasoning_Step": "1. How many figures are there in total?\n2. How many of these shapes have 5 edges?",
+        "Answer_Sheet": "1. How many figures are there in total?: 8\n2. How many of these shapes have 5 edges?"
+    },
+
+    "puzzle_6_e_1.png": {
+        "Question": "Four different numbers from 57, 60, 83, 94, and 97 are used, one in each polygon, so that the equality is correct. Each of the used numbers can be used more than once. Which number is not used? Options: A=60 B=83 C=97 D=57 E=94",
+        "GT_option": "B",
+        "GT_value": "83",
+        "Reasoning_Step": "1. What is the content of the question?\n2. What is the result of using a given number to satisfy the above equation?\n3. Which number is not used in the equation?",
+        "Answer_Sheet": "1. What is the content of the question?: Use four of the five numbers given to satisfy the given equation in the image, and then find the number that is not used.\n2. What is the result of using a given number to satisfy the above equation?: 97 + 57 = 60 + 94\n3. Which number is not used in the equation?"
+    },
+
+    "puzzle_6_e_2.png": {
+        "Question": "Each number from 13, 29, 46, 75, and 92 can be used more than once (one in each polygon) such that the equality is correct. A total of four different numbers are used. Which number is not used? Options: A=29 B=13 C=46 D=92 E=75",
+        "GT_option": "B",
+        "GT_value": "13",
+        "Reasoning_Step": "1. What is the content of the question?\n2. What is the result of using a given number to satisfy the above equation?\n3. Which number is not used in the equation?",
+        "Answer_Sheet": "1. What is the content of the question?: Use four of the five numbers given to satisfy the given equation in the image, and then find the number that is not used.\n2. What is the result of using a given number to satisfy the above equation?: 92 + 29 = 75 + 46\n3. Which number is not used in the equation?"
+    },
+
+    "puzzle_6_e_3.png": {
+        "Question": "The problem requires the use of four different numbers from 31, 51, 53, 75, and 95, one in each polygon, such that the equality is correct. Each number can be used more than once. Which number is not used? Options: A=31 B=53 C=75 D=51 E=95",
+        "GT_option": "B",
+        "GT_value": "53",
+        "Reasoning_Step": "1. What is the content of the question?\n2. What is the result of using a given number to satisfy the above equation?\n3. Which number is not used in the equation?",
+        "Answer_Sheet": "1. What is the content of the question?: Use four of the five numbers given to satisfy the given equation in the image, and then find the number that is not used.\n2. What is the result of using a given number to satisfy the above equation?: 31 + 95 = 51 + 75\n3. Which number is not used in the equation?"
+    },
+
+    
+    "puzzle_7_e_1.png": {
+        "Question": "In an imaginary virtual world, for 1 medal, you can trade 3 marine animals (top of the figure). For 1 marine animal, you can get 2 locks (bottom of the figure). How many lock (or locks) can you get for 1 medal? Options: A=5 B=6 C=3 D=2 E=9",
+        "GT_option": "B",
+        "GT_value": "6",
+        "Reasoning_Step": "1. How many marine animals can I trade for one medal?\n2. How many locks can I trade one marine animal for?\n3. So, how many locks can I get if I exchange one medal for a marine animal and then for a lock again?",
+        "Answer_Sheet": "1. How many marine animals can I trade for one medal?: 3\n2. How many locks can I trade one marine animal for?: 2\n3. So, how many locks can I get if I exchange one medal for a marine animal and then for a lock again?"
+    },
+
+    "puzzle_7_e_2.png": {
+        "Question": "In an imaginary virtual world, you can get 3 mailboxes for 1 ball (top of the figure), and get 1 mailbox for 2 umbrellas (bottom of the figure). How many umbrella (or umbrellas) can you get for 2 balls? Options: A=12 B=10 C=16 D=9 E=13",
+        "GT_option": "A",
+        "GT_value": "12",
+        "Reasoning_Step": "1. How many mailboxes can I trade for one ball?\n2. How many umbrellas can I trade one mailbox for?\n3. So, how many umbrellas can I get if I exchange two balls for a mailbox and then for a umbrella again?",
+        "Answer_Sheet": "1. How many mailboxes can I trade for one ball?: 3\n2. How many umbrellas can I trade one mailbox for?: 2\n3. So, how many umbrellas can I get if I exchange two balls for a mailbox and then for a umbrella again?"
+    },
+
+    "puzzle_7_e_3.png": {
+        "Question": "In an imaginary virtual world, for 2 flowers, you can trade 3 writing utensils (top of the figure). You can also get 1 writing utensil for 2 locks (bottom of the figure). How many lock (or locks) can you get for 1 flower? Options: A=3 B=2 C=5 D=1 E=6",
+        "GT_option": "A",
+        "GT_value": "3",
+        "Reasoning_Step": "1. How many utensils can I trade for two flowers?\n2. How many locks can I trade one utensil for?\n3. So, how many locks can I get if I exchange one flower for a utensil and then for a lock again?",
+        "Answer_Sheet": "1. How many utensils can I trade for two flowers?: 3\n2. How many locks can I trade one utensil for?: 2\n3. So, how many locks can I get if I exchange one flower for a utensil and then for a lock again?"
+    },
+
+    "puzzle_17_e_1.png": {
+        "Question": "A man cuts a sheet of paper through the red line after he folds it 2 times through the dashed lines. The number of pieces of paper he ends up with is: Options: A=5 B=3 C=7 D=6 E=2",
+        "GT_option": "B",
+        "GT_value": "3",
+        "Reasoning_Step": "1. What is the result of the first folding of the paper?\n2. What is the result of folding the paper a second time?\n3. So, how many pieces of paper do you make when you cut the folded paper along the red line in the image?",
+        "Answer_Sheet": "1. What is the result of the first folding of the paper?: The two sides of the paper overlap with each other based on the middle dotted line.\n2. What is the result of folding the paper a second time?: Once again, the paper is superimposed based on the dotted line in the middle.\n3. So, how many pieces of paper do you make when you cut the folded paper along the red line in the image?"
+    },
+
+    "puzzle_17_e_2.png": {
+        "Question": "After folding a sheet of paper 2 times through the dashed lines, a man cuts it through the red line as shown. The number of pieces of paper he ends up with is: Options: A=2 B=6 C=9 D=7 E=5",
+        "GT_option": "E",
+        "GT_value": "5",
+        "Reasoning_Step": "1. What is the result of the first folding of the paper?\n2. What is the result of folding the paper a second time?\n3. So, how many pieces of paper do you make when you cut the folded paper along the red line in the image?",
+        "Answer_Sheet": "1. What is the result of the first folding of the paper?: The two sides of the paper overlap with each other based on the middle dotted line.\n2. What is the result of folding the paper a second time?: Once again, the paper is superimposed based on the dotted line in the middle.\n3. So, how many pieces of paper do you make when you cut the folded paper along the red line in the image?"
+    },
+
+    "puzzle_17_e_3.png": {
+        "Question": "A man folds a sheet of paper 2 times through the dashed lines and then cuts it through the red line as shown. How many pieces of paper does he end up with? Options: A=3 B=5 C=2 D=6 E=4",
+        "GT_option": "C",
+        "GT_value": "2",
+        "Reasoning_Step": "1. What is the result of the first folding of the paper?\n2. What is the result of folding the paper a second time?\n3. So, how many pieces of paper do you make when you cut the folded paper along the red line in the image?",
+        "Answer_Sheet": "1. What is the result of the first folding of the paper?: The two sides of the paper overlap with each other based on the middle dotted line.\n2. What is the result of folding the paper a second time?: Once again, the paper is superimposed based on the dotted line in the middle.\n3. So, how many pieces of paper do you make when you cut the folded paper along the red line in the image?"
+    },
+
+    "puzzle_19_e_1.png": {
+        "Question": "How many ways are there for the feline to reach the bird if the feline can only move horizontally or vertically towards the bird in the grid? Options: A=6 B=13 C=12 D=10 E=9",
+        "GT_option": "D",
+        "GT_value": "10",
+        "Reasoning_Step": "1. How many times do I have to move in which direction for the feelin to go toward bird?\n2. So, how many ways are there to move to the bird side?",
+        "Answer_Sheet": "1. How many times do I have to move in which direction for the feelin to go toward bird?: 3 times to the left and 2 times to the top.\n2. So, how many ways are there to move to the bird side?"
+    },
+
+    "puzzle_19_e_2.png": {
+        "Question": "In how many ways can the bird reach the monkey given that the bird can only move horizontally or vertically towards the monkey in the grid? Options: A=9 B=5 C=2 D=6 E=8",
+        "GT_option": "D",
+        "GT_value": "6",
+        "Reasoning_Step": "1. How many times do I have to move in which direction for the bird to go toward monkey?\n2. So, how many ways are there to move to the monkey side?",
+        "Answer_Sheet": "1. How many times do I have to move in which direction for the bird to go toward monkey?: 2 times to the left and 2 times to the top.\n2. So, how many ways are there to move to the monkey side?"
+    },
+
+    "puzzle_19_e_3.png": {
+        "Question": "A monkey can only move horizontally or vertically towards a bird in the grid. How many ways are there for the monkey to reach the bird? Options: A=10 B=7 C=3 D=6 E=9",
+        "GT_option": "D",
+        "GT_value": "6",
+        "Reasoning_Step": "1. How many times do I have to move in which direction for the monkey to go toward bird?\n2. So, how many ways are there to move to the new side?",
+        "Answer_Sheet": "1. How many times do I have to move in which direction for the monkey to go toward bird?: 2 times to the left and 2 times to the bottom.\n2. So, how many ways are there to move to the bird side?"
+    },
+
+    "puzzle_40_e_1.png": {
+        "Question": "A man built the figure shown in the image by using equal small squares. What is the least number of equal small squares he should add to the image in order to obtain a fully filled larger square? Options: A=18 B=16 C=12 D=20 E=17",
+        "GT_option": "B",
+        "GT_value": "16",
+        "Reasoning_Step": "1. How many small squares do you see in the image?\n2. What is the length of one side of the smallest square that contains all the small squares?\n3. So, how many small squares do you need to fill in to fill in the big square?",
+        "Answer_Sheet": "1. How many small squares do you see in the image?: 9\n2. What is the length of one side of the smallest square that contains all the small squares?: 5\n3. So, how many small squares do you need to fill in to fill in the big square?"
+    },
+
+    "puzzle_40_e_2.png": {
+        "Question": "A man built the figure shown in the picture by using equal small squares. What is the least number of equal small squares he should add to the picture in order to obtain a fully filled larger square? Options: A=9 B=13 C=14 D=10 E=12",
+        "GT_option": "D",
+        "GT_value": "10",
+        "Reasoning_Step": "1. How many small squares do you see in the image?\n2. What is the length of one side of the smallest square that contains all the small squares?\n3. So, how many small squares do you need to fill in to fill in the big square?",
+        "Answer_Sheet": "1. How many small squares do you see in the image?: 6\n2. What is the length of one side of the smallest square that contains all the small squares?: 4\n3. So, how many small squares do you need to fill in to fill in the big square?"
+    },
+
+    "puzzle_40_e_3.png": {
+        "Question": "A man used equal small squares to build the figure shown in the picture. How many number of equal small squares he should add to the picture at least to obtain a fully filled larger square? Options: A=7 B=9 C=6 D=11 E=8",
+        "GT_option": "A",
+        "GT_value": "7",
+        "Reasoning_Step": "1. How many small squares do you see in the image?\n2. What is the length of one side of the smallest square that contains all the small squares?\n3. So, how many small squares do you need to fill in to fill in the big square?",
+        "Answer_Sheet": "1. How many small squares do you see in the image?: 9\n2. What is the length of one side of the smallest square that contains all the small squares?: 4\n3. So, how many small squares do you need to fill in to fill in the big square?"
+    },
+
+    "puzzle_77_0.png": {
+        "Question": "Which figure on the right matches with the left, if we invert the colors?  Options: A=A B=B C=C D=D E=E",
+        "GT_option": "C",
+        "GT_value": "C",
+        "Reasoning_Step": "1. What does the left shape mean in the question?\n2. Then, which of A, B, C, D, or E matches the colors of the left shape in reverse?",
+        "Answer_Sheet": "1. What does the left shape mean in the question?: circle on the first yellow background.\n2. Then, which of A, B, C, D, or E matches the colors of the left shape in reverse?"
+    },
+
+    "puzzle_77_1.png": {
+        "Question": "Which cartoon matches with the given cartoon on the left if we invert colors?  Options: A=A B=B C=C D=D E=E",
+        "GT_option": "D",
+        "GT_value": "D",
+        "Reasoning_Step": "1. What does the left shape mean in the question?\n2. Then, which of A, B, C, D, or E matches the colors of the left shape in reverse?",
+        "Answer_Sheet": "1. What does the left shape mean in the question?: circle on the first yellow background.\n2. Then, which of A, B, C, D, or E matches the colors of the left shape in reverse?"
+    },
+
+    "puzzle_77_2.png": {
+        "Question": "Which cartoon matches with the given cartoon on the left if we invert colors?  Options: A=A B=B C=C D=D E=E",
+        "GT_option": "D",
+        "GT_value": "D",
+        "Reasoning_Step": "1. What does the left shape mean in the question?\n2. Then, which of A, B, C, D, or E matches the colors of the left shape in reverse?",
+        "Answer_Sheet": "1. What does the left shape mean in the question?: circle on the first pink background.\n2. Then, which of A, B, C, D, or E matches the colors of the left shape in reverse?"
+    }
+}
