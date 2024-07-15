@@ -9,12 +9,13 @@ from transformers import TrainingArguments, PretrainedConfig, Seq2SeqTrainingArg
 
 @dataclass
 class DataArguments(PretrainedConfig):
+    mode='train'
     data_root="/data/SMART101-release-v1/SMART101-Data/"
-    train_puzzle_list="1,2,6,7,17,19,40,77"
-    val_puzzle_list="50,55,60,65"
-    test_puzzle_list="70,75,80,85,90"
-    data_tot=3
-
+    train_puzzle_list="zero_shot"
+    val_puzzle_list="1,2,6,7,17,19,40,77"
+    test_puzzle_list="1,2,6,7,17,19,40,77"
+    train_tot=1500
+    eval_tot=50
 
 @dataclass
 class ModelArguments(PretrainedConfig):
@@ -32,11 +33,11 @@ class TrainingArguments(Seq2SeqTrainingArguments):
     """
         training_arguments을 상속받았기 때문에 num_train_epochs, per_device_train_batch_size등이 자동으로 들어감 
     """
-    # project_name: str=field(default="Visual_Chain-of-Thought_Project")
-    mode='few_shot_train'
-    num_train_epoch=5
-    per_device_train_batch_size=1,
-    per_device_eval_batch_size=1,
+    project_name="Visual_Chain-of-Thought_Project"
+    run_name="Visual_Chain-of-Thought_Project_Demo"
+    num_train_epoch=3
+    per_device_train_batch_size=8,
+    per_device_eval_batch_size=8,
     gradient_accumulation_steps=8,
     warmup_steps=50,
     learning_rate=1e-4,
@@ -46,10 +47,18 @@ class TrainingArguments(Seq2SeqTrainingArguments):
     save_strategy="steps",
     save_steps=250,
     save_total_limit=1,
+    evaluation_strategy="steps"
+    eval_steps=250
+    load_ckpt_path=None
     fp16=True,
     remove_unused_columns=False,
     report_to='wandb',
     predict_with_generate=True
+    max_length=256
+    should_log=True
+    seed=1123
+    ddp_find_unused_parameters=False
+    
     # push_to_hub_model_id="idefics2-8b-docvqa-finetuned-tutorial",
     # evaluation_strategy: str="epoch",
     

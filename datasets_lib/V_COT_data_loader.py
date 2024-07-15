@@ -22,13 +22,26 @@ class V_COT_reasoning_anlysis_dataset(Dataset):
         self.data_root = args.data_root
         self.mode = mode
         self.answer_sheet_path = './V_COT_output/V_COT_Answer_Sheet.json'
+        
         if self.mode == 'train':
-            self.puzzle_list = args.train_puzzle_list
+            if args.train_puzzle_list == 'all':
+                puzzle_ids = [f'{pz_id}' for pz_id in range(1,102)]
+            elif args.train_puzzle_list == 'zero_shot':
+                puzzle_ids = [f'{pz_id}' for pz_id in range(1,102)]
+                puzzle_ids = sorted(list(set(puzzle_ids) - set(['1','2','6','7','17','19','40','77'])))
+            else:
+                self.puzzle_list = args.train_puzzle_list
+                puzzle_ids = self.puzzle_list.split(',')
+            self.num_tot = args.train_tot
         if self.mode == 'valid':
             self.puzzle_list = args.val_puzzle_list
+            puzzle_ids = self.puzzle_list.split(',')
+            self.num_tot = args.eval_tot
         elif self.mode == 'test':
             self.puzzle_list = args.test_puzzle_list
-        self.num_tot = args.data_tot
+            puzzle_ids = self.puzzle_list.split(',')
+            self.num_tot = args.eval_tot
+        
         self.diff = 'easy'
         self.qa_info = []
         self.args = args
@@ -37,7 +50,6 @@ class V_COT_reasoning_anlysis_dataset(Dataset):
             self.answer_sheet = json.load(f)
 
         # puzzle_ids = [f'{pz_id}' for pz_id in range(1,102)][:self.puzzle_tot]
-        puzzle_ids = self.puzzle_list.split(',')
         
         for puzzle_id in puzzle_ids:
             puzzle_root = puzzle_id + "/" + gv.puzzle_diff_str[self.diff] + "/"

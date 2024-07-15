@@ -40,8 +40,8 @@ def V_COT(args, dataloader):
     
     # V_COT 결과 저장할 JSON 파일 세팅 ========================================== #
     global result_json_path
-    result_json_path = os.path.join(args.save_root, 'V_COT_Reasoning_Analysis_Result.json')
-    puzzle_list = args.train_puzzle_list.split(',')
+    result_json_path = os.path.join(args.save_root, args.output_name)
+    puzzle_list = args.test_puzzle_list.split(',')
     for pids in puzzle_list:
         puzzle_save_root = os.path.join(args.save_root, 'puzzle', pids)
         if not os.path.exists(puzzle_save_root): os.makedirs(puzzle_save_root)
@@ -60,17 +60,22 @@ def V_COT(args, dataloader):
         processor = InstructBlipProcessor.from_pretrained("Salesforce/instructblip-flan-t5-xl")
         
     elif args.VLM_type == "Idefics2":
-        from transformers import AutoProcessor, AutoModelForVision2Seq
-        processor = AutoProcessor.from_pretrained("HuggingFaceM4/idefics2-8b",
+        from models.Idefics2.processing_idefics2 import Idefics2Processor
+        from models.Idefics2.modeling_idefics2 import Idefics2ForConditionalGeneration
+        processor = Idefics2Processor.from_pretrained("HuggingFaceM4/idefics2-8b",
                                                   do_image_splitting=False)
                                                 #   size= {"longest_edge": 448, "shortest_edge": 378})
-        model = AutoModelForVision2Seq.from_pretrained("HuggingFaceM4/idefics2-8b",
-                                                       torch_dtype=torch.bfloat16).to(device)
+        if args.load_ckpt_path:                                                
+            model = Idefics2ForConditionalGeneration.from_pretrained(args.load_ckpt_path, 
+                                                                    torch_dtype=torch.bfloat16).to(device)
+        else:
+            model = Idefics2ForConditionalGeneration.from_pretrained("HuggingFaceM4/idefics2-8b", 
+                                                                    torch_dtype=torch.bfloat16).to(device)
 
     # V_COT 실행 ============================================================= #
     def Execute(epoch, args, target_dataloader):
-        puzzle_len  = len(args.train_puzzle_list.split(','))
-        print(f'Batch Size: {args.batch_size}, #puzzle: {puzzle_len}, #instance: {args.data_tot}, #Data: {len(target_dataloader)}\n')
+        puzzle_len  = len(args.test_puzzle_list.split(','))
+        print(f'Batch Size: {args.batch_size}, #puzzle: {puzzle_len}, #instance: {args.eval_tot}, #Data: {len(target_dataloader)}\n')
         for i, (im, im_path, pids, q_stn, o, ao, a, av, answer_sheet) in tqdm(enumerate(target_dataloader)):
 
             # if i >= 5 : break  # 배리어
@@ -210,7 +215,7 @@ def V_COT(args, dataloader):
 
 def get_data_loader(args, batch_size=100, shuffle=False, num_workers=6, pin_memory=True):
     args.preprocess = None
-    dataset = dl.V_COT_reasoning_anlysis_dataset(args, mode='train')
+    dataset = dl.V_COT_reasoning_anlysis_dataset(args, mode='test')
     collate_fn = dl.V_COT_SMART_collate_fn
 
     data_loader = torch.utils.data.DataLoader(
@@ -236,8 +241,10 @@ if __name__ == "__main__":
         help="location of the csv files, and location of the images, relative location is provided in the csv file.",
     )
     parser.add_argument("--save_root", type=str, default="./V_COT_output/", help="location to save intermediate files.")
-    parser.add_argument("--train_puzzle_list", type=str, default='1,2,6,7,17,19,40,77')
-    parser.add_argument("--data_tot", type=int, default=3)
+    parser.add_argument("--load_ckpt_path", type=str, default="./checkpoints/dump/")
+    parser.add_argument("--output_name", type=str, default="dump.json")
+    parser.add_argument("--test_puzzle_list", type=str, default='1,2,6,7,17,19,40,77')
+    parser.add_argument("--eval_tot", type=int, default=3)
     
     # 내가 추가한 Argument List =================================================================== #
     parser.add_argument("--VLM_type", type=str, default='Idefics2')

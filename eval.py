@@ -22,7 +22,7 @@ def eval():
     gv.custom_globals_init()
     
     # 모델 load...
-    model, processor = get_model(model_args, training_args)
+    model, processor = get_model(data_args, model_args, training_args)
     
     # 데이터로더 load...
     data_module = get_dataset(training_args, model_args, data_args, processor=processor)
@@ -32,6 +32,7 @@ def eval():
     
     # 테스트셋 실험...
     predictions, labels, metrics = trainer.predict(test_dataset=data_module["test_dataset"])
+    # last hidden_state, hidden_state, attention_map, labels, metrics =>
     
     pred_id = predictions[0].argmax(2)
     pred_answer = processor.batch_decode(pred_id, skip_special_tokens=True)

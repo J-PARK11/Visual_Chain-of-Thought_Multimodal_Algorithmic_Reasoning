@@ -1,1 +1,5 @@
 ./V_COT_output/puzzle/
+./V_COT_output/another_VLM_test
+./checkpoints/
+./checkpoints/Zero_Shot_train/
+./wandb/

@@ -2,13 +2,16 @@ import random
 from .V_COT_data_loader import V_COT_reasoning_anlysis_dataset
 
 def get_dataset(training_args, model_args, data_args, processor=None):
-    if training_args.mode == 'few_shot_train':
-        train_dataset = V_COT_reasoning_anlysis_dataset(data_args, 'train')
-        val_dataset = V_COT_reasoning_anlysis_dataset(data_args, 'valid')
-        test_dataset = V_COT_reasoning_anlysis_dataset(data_args, 'test')
-        collator = V_COT_collator(processor)
+    train_dataset = V_COT_reasoning_anlysis_dataset(data_args, 'train')
+    val_dataset = V_COT_reasoning_anlysis_dataset(data_args, 'valid')
+    test_dataset = V_COT_reasoning_anlysis_dataset(data_args, 'test')
+    collator = V_COT_collator(processor)
+    
+    print(f'\nTrain Dataset: {len(train_dataset)}')
+    print(f'Valid Dataset: {len(val_dataset)}, {data_args.val_puzzle_list}')
+    print(f'Test Dataset: {len(test_dataset)}, {data_args.test_puzzle_list}')
         
-        return dict(train_dataset=train_dataset, val_dataset=val_dataset, test_dataset=test_dataset, data_collator=collator)
+    return dict(train_dataset=train_dataset, val_dataset=val_dataset, test_dataset=test_dataset, data_collator=collator)
     
 class V_COT_collator:
     def __init__(self, processor):

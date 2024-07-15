@@ -1,3 +1,5 @@
+import os
+import wandb
 import torch
 from transformers import HfArgumentParser, set_seed, Seq2SeqTrainer
 
@@ -21,8 +23,13 @@ def train():
     local_rank = training_args.local_rank
     gv.custom_globals_init()
     
+    if training_args.report_to == ['wandb']:
+        os.environ["WANDB_PROJECT"] = training_args.project_name
+        wandb.init(project=training_args.project_name)
+        wandb.run_name = training_args.run_name
+    
     # 모델 load...
-    model, processor = get_model(model_args, training_args)
+    model, processor = get_model(data_args, model_args, training_args)
     
     # 데이터로더 load...
     data_module = get_dataset(training_args, model_args, data_args, processor=processor)
@@ -31,12 +38,14 @@ def train():
     trainer = get_trainer(model_args, training_args, model, processor, data_module)
     
     # Trainer 학습 시작 및 저장...
+    print("\n========== Visual Chain of Thought Train Start ==========\n")
     trainer.train()
     trainer.save_model(training_args.output_dir)
     trainer.save_state()
     
     # 테스트셋 실험...
-    predictions, labels, metrics = trainer.predict(test_dataset=data_module["test_dataset"])
+    # predictions, labels, metrics = trainer.predict(test_dataset=data_module["test_dataset"])
+    # print(metrics)
     
     print('\nComplete')
 
