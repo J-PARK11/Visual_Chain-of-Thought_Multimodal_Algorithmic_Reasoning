@@ -1,10 +1,10 @@
 import random
-from .V_COT_data_loader import V_COT_reasoning_anlysis_dataset
+from .V_COT_data_loader import V_COT_SMART101_Dataset
 
 def get_dataset(training_args, model_args, data_args, processor=None):
-    train_dataset = V_COT_reasoning_anlysis_dataset(data_args, 'train')
-    val_dataset = V_COT_reasoning_anlysis_dataset(data_args, 'valid')
-    test_dataset = V_COT_reasoning_anlysis_dataset(data_args, 'test')
+    train_dataset = V_COT_SMART101_Dataset(data_args, 'train')
+    val_dataset = V_COT_SMART101_Dataset(data_args, 'valid')
+    test_dataset = V_COT_SMART101_Dataset(data_args, 'test')
     collator = V_COT_collator(processor)
     
     print(f'\nTrain Dataset: {len(train_dataset)}')

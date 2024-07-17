@@ -2,6 +2,7 @@ import os
 import pdb
 import json
 import torch
+import random
 import pickle
 import warnings
 import numpy as np
@@ -16,7 +17,7 @@ import lib.V_COT_globvars as gv
 from transformers.image_utils import load_image
 
 
-class V_COT_reasoning_anlysis_dataset(Dataset):
+class V_COT_SMART101_Dataset(Dataset):
     def __init__(self, args, mode):
         # super().__init__(args)
         self.data_root = args.data_root
@@ -60,6 +61,11 @@ class V_COT_reasoning_anlysis_dataset(Dataset):
                 qa_info[t]["AnswerValue"] = utils.get_val(qa_info[t], qa_info[t]["Answer"])
             self.qa_info = self.qa_info + qa_info
             
+        if self.mode == 'train':
+            random.seed(1123)
+            random.shuffle(self.qa_info)
+            print('Train Dataset shuffled')
+            
     def ans_encode(self, answer):
         return ord(answer) - ord("A")
 
@@ -93,13 +99,13 @@ class V_COT_reasoning_anlysis_dataset(Dataset):
         
         if not info: info = []
         opts = []
-        Answer_Option_phrase = ' Options:'
+        Answer_Option_phrase = '\nOptions:'
         for op in ["A", "B", "C", "D", "E"]:
             op_val = info[op]
-            Answer_Option_phrase += f' {op}={op_val}'
+            Answer_Option_phrase += f'\n{op}. {op_val}'
             opts.append(op_val)
         q_stn = info["Question"]
-        q_stn = q_stn + Answer_Option_phrase  
+        q_stn = q_stn + Answer_Option_phrase + '\nPlease answer with the alphabet in the options'
         
         return im, im_path, torch.tensor(int(pid)), q_stn, opts, info["Answer"], torch.tensor(lbl), torch.tensor(answer), answer_sheet
 

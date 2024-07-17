@@ -1846,6 +1846,7 @@ class Idefics2ForConditionalGeneration(Idefics2PreTrainedModel):
         loss = None
         if labels is not None:
             labels = labels.to(logits.device)
+            
             # Shift so that tokens < n predict n
             if attention_mask is not None:
                 shift_attention_mask = attention_mask[..., 1:].to(logits.device)
@@ -1854,6 +1855,7 @@ class Idefics2ForConditionalGeneration(Idefics2PreTrainedModel):
             else:
                 shift_logits = logits[..., :-1, :].contiguous()
                 shift_labels = labels[..., 1:].contiguous()
+            
             # Flatten the tokens
             loss_fct = CrossEntropyLoss()
             loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
@@ -1861,7 +1863,6 @@ class Idefics2ForConditionalGeneration(Idefics2PreTrainedModel):
         if not return_dict:
             output = (logits,) + outputs[1:]
             return (loss,) + output if loss is not None else output
-
         return Idefics2CausalLMOutputWithPast(
             loss=loss,
             logits=logits,

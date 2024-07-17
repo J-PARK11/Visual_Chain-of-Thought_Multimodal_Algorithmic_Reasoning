@@ -6,6 +6,7 @@ from transformers import HfArgumentParser, set_seed, Seq2SeqTrainer
 import lib.V_COT_globvars as gv
 from config.hf_config import *
 from models.build_model import get_model
+from metrics.build_metric import get_metric
 from trainers.build_trainer import get_trainer
 from datasets_lib.build_dataset import get_dataset
 
@@ -24,8 +25,8 @@ def train():
     gv.custom_globals_init()
     
     if training_args.report_to == ['wandb']:
-        os.environ["WANDB_PROJECT"] = training_args.project_name
-        wandb.init(project=training_args.project_name)
+        os.environ["WANDB_PROJECT"] = training_args.run_name
+        wandb.init(project=training_args.run_name)
         wandb.run_name = training_args.run_name
     
     # 모델 load...
@@ -35,7 +36,8 @@ def train():
     data_module = get_dataset(training_args, model_args, data_args, processor=processor)
     
     # Trainer load...
-    trainer = get_trainer(model_args, training_args, model, processor, data_module)
+    metric = get_metric(model_args, data_args, processor, info='base')
+    trainer = get_trainer(model_args, training_args, model, processor, data_module, metric)
     
     # Trainer 학습 시작 및 저장...
     print("\n========== Visual Chain of Thought Train Start ==========\n")

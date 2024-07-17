@@ -28,23 +28,25 @@ def get_model(data_args, model_args, training_args):
                     BnB_config = BitsAndBytesConfig(
                         load_in_4bit=True,
                         bnb_4bit_quant_type="nf4",
-                        bnb_4bit_compute_dtype=torch.float16
+                        bnb_4bit_compute_dtype=torch.bfloat16
                     )
             
             model = Idefics2ForConditionalGeneration.from_pretrained(model_args.pretrained_model_path,
-                                                                    torch_dtype=torch.float16,
+                                                                    torch_dtype=torch.bfloat16,
                                                                     quantization_config=BnB_config if model_args.USE_QLORA else None,
+                                                                    max_length = model_args.max_length, # 20
                                                                     low_cpu_mem_usage=True
                                                                     # quantization_config=default_quantization_config
                                                                     # _attn_implementation="flash_attention_2"
                                                                     )#.to(training_args.device)
             if model_args.USE_LORA :
                 model.add_adapter(lora_config)
-                model.enable_adapters
+                model.enable_adapters()
         
         else: # valid, test
             model = Idefics2ForConditionalGeneration.from_pretrained(training_args.load_ckpt_path, 
                                                                     torch_dtype=torch.bfloat16,
+                                                                    max_length=model_args.max_length,
                                                                     low_cpu_mem_usage=True)            
             
     else:

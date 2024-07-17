@@ -4,6 +4,7 @@ from transformers import HfArgumentParser, set_seed, Seq2SeqTrainer
 import lib.V_COT_globvars as gv
 from config.hf_config import *
 from models.build_model import get_model
+# from metrics.build_metric import get_metric
 from trainers.build_trainer import get_trainer
 from datasets_lib.build_dataset import get_dataset
 
@@ -28,7 +29,8 @@ def eval():
     data_module = get_dataset(training_args, model_args, data_args, processor=processor)
     
     # Trainer load...
-    trainer = get_trainer(model_args, training_args, model, processor, data_module)
+    # metric = get_metric(model_args, data_args, processor, info='base')
+    trainer = get_trainer(model_args, training_args, model, processor, data_module, metric=None)
     
     # 테스트셋 실험...
     predictions, labels, metrics = trainer.predict(test_dataset=data_module["test_dataset"])
@@ -36,10 +38,11 @@ def eval():
     
     pred_id = predictions[0].argmax(2)
     pred_answer = processor.batch_decode(pred_id, skip_special_tokens=True)
+    print(pred_answer[0])
     
-    print('predictions:',predictions)
-    print('labels:',labels)
-    print('metrics:',metrics)
+    # print('predictions:',predictions)
+    # print('labels:',labels)
+    # print('metrics:',metrics)
     print('\nComplete')
 
 if __name__ == "__main__":
