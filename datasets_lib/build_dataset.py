@@ -23,13 +23,14 @@ class V_COT_collator:
         texts = []
         images = []
         for idx, (image, im_p, pids, question, opts, answer_option, lbl, answer, answer_sheet) in enumerate(examples):
+            question = "Question: " + question
             messages = [
                 {
                     "role": "user",
                     "content": [
                         {"type": "text", "text": 'Looking at this image, solve the question.'},
                         {"type": "image"},
-                        {"type": "text", "text": 'Question: {question}'}
+                        {"type": "text", "text": question}
                     ]
                 },
                 {
@@ -46,7 +47,8 @@ class V_COT_collator:
         batch = self.processor(text=texts, images=images, return_tensors="pt", padding=True)
 
         labels = batch["input_ids"].clone()
-        labels[labels == self.processor.tokenizer.pad_token_id] = self.image_token_id
+        labels[labels == self.processor.tokenizer.pad_token_id] = -100
+        labels[labels == self.image_token_id] = -100
         batch["labels"] = labels
 
         return batch

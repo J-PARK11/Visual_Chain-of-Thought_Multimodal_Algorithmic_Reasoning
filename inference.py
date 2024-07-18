@@ -68,6 +68,7 @@ def V_COT(args, dataloader):
         if args.load_ckpt_path:                                                
             model = Idefics2ForConditionalGeneration.from_pretrained(args.load_ckpt_path, 
                                                                     torch_dtype=torch.bfloat16).to(device)
+            print(f'Load ckpt: {args.load_ckpt_path}')
         else:
             model = Idefics2ForConditionalGeneration.from_pretrained("HuggingFaceM4/idefics2-8b", 
                                                                     torch_dtype=torch.bfloat16).to(device)
@@ -173,6 +174,24 @@ def V_COT(args, dataloader):
                 
                 for j in range(len(exp5_pred)):
                     exp5_pred[j] = exp5_pred[j].split('Assistant: ')[-1]  
+                    
+                # Exp6: Q, I, GT Answer sheet => A ================================================== #
+                exp6_prompt = [
+                    {"role": "user",
+                     "content": [
+                         {"type": "text", "text": 'Explain the contents of image.'},
+                         {"type": "image"},
+                         ]}
+                    for question, solution in zip(q_stn, answer_sheet)]
+                
+                exp6_query = processor.apply_chat_template(exp6_prompt, add_generation_prompt=True)
+                exp6_query_input = processor(text=exp6_query, images=im, return_tensors='pt').to(device)
+                with torch.no_grad():
+                    exp6_pred_id = model.generate(**exp6_query_input, max_new_tokens=500)
+                    exp6_pred = processor.batch_decode(exp6_pred_id, skip_special_tokens=True)
+                
+                for j in range(len(exp6_pred)):
+                    exp6_pred[j] = exp6_pred[j].split('Assistant: ')[-1]  
                 
             # Result Logging                                 
             for iter, img_path in enumerate(im_path):
@@ -186,6 +205,7 @@ def V_COT(args, dataloader):
                                          'exp3':exp3_pred[iter],
                                          'exp4':exp4_pred[iter],
                                          'exp5':exp5_pred[iter],
+                                         'exp6':exp6_pred[iter],
                                          'GT_option': ao[iter],
                                          'GT_value': o[iter][option_dict[ao[iter]]]}
                 
@@ -247,7 +267,7 @@ if __name__ == "__main__":
         help="location of the csv files, and location of the images, relative location is provided in the csv file.",
     )
     parser.add_argument("--save_root", type=str, default="./V_COT_output/", help="location to save intermediate files.")
-    parser.add_argument("--load_ckpt_path", type=str, default="./checkpoints/dump/")
+    parser.add_argument("--load_ckpt_path", type=str, default=None)
     parser.add_argument("--output_name", type=str, default="dump.json")
     parser.add_argument("--test_puzzle_list", type=str, default='1,2,6,7,17,19,40,77')
     parser.add_argument("--eval_tot", type=int, default=3)

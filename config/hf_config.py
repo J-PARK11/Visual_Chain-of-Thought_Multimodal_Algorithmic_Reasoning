@@ -14,8 +14,9 @@ class DataArguments(PretrainedConfig):
     train_puzzle_list="zero_shot"
     val_puzzle_list="1,2,6,7,17,19,40,77"
     test_puzzle_list="1,2,6,7,17,19,40,77"
-    train_tot=1500
-    eval_tot=50
+    train_tot=1000
+    eval_tot=3
+    add_data=None
 
 @dataclass
 class ModelArguments(PretrainedConfig):

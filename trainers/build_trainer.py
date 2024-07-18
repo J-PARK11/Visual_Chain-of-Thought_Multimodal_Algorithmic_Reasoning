@@ -1,5 +1,5 @@
-from .idefics2_trainer import Trainer
-# from transformers import Trainer
+# from .idefics2_trainer import Trainer
+from transformers import Trainer
 
 def get_trainer(model_args, training_args, model, processor, data_module, metric=None):
     if model_args.model_type == "Idefics2-8b":
