@@ -11,12 +11,15 @@ from transformers import TrainingArguments, PretrainedConfig, Seq2SeqTrainingArg
 class DataArguments(PretrainedConfig):
     mode='train'
     data_root="/data/SMART101-release-v1/SMART101-Data/"
-    train_puzzle_list="zero_shot"
-    val_puzzle_list="1,2,6,7,17,19,40,77"
-    test_puzzle_list="1,2,6,7,17,19,40,77"
-    train_tot=1000
+    train_puzzle_list="GT_with_rationale"
+    val_puzzle_list="1,2,6,7,19,40,77"
+    test_puzzle_list="1,2,6,7,10,17,19,40,77,80,81,82,83,85,88,92,95"
+    train_tot=1
     eval_tot=3
     add_data=None
+    # 1, 2, 6, 7, 19, 40, 44, 77
+    # 50, 51, 54, 55, 56, 58, 61, 78
+    # 80, 81, 82, 83, 85, 88, 92, 95
 
 @dataclass
 class ModelArguments(PretrainedConfig):

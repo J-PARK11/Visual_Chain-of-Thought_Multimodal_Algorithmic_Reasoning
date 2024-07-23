@@ -1858,7 +1858,10 @@ class Idefics2ForConditionalGeneration(Idefics2PreTrainedModel):
             
             # Flatten the tokens
             loss_fct = CrossEntropyLoss()
-            loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1))[-2], shift_labels.view(-1)[-2])
+            
+            # shift_labels[:-5] = -100
+            loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
+            # loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1))[-5:], shift_labels.view(-1)[-5:])
 
         if not return_dict:
             output = (logits,) + outputs[1:]

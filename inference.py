@@ -76,7 +76,9 @@ def V_COT(args, dataloader):
     # V_COT 실행 ============================================================= #
     def Execute(epoch, args, target_dataloader):
         puzzle_len  = len(args.test_puzzle_list.split(','))
+        exp_option = args.experiment_number.split(',')
         print(f'Batch Size: {args.batch_size}, #puzzle: {puzzle_len}, #instance: {args.eval_tot}, #Data: {len(target_dataloader)}\n')
+        print(f'Experiment Setting: {exp_option}')
         for i, (im, im_path, pids, q_stn, o, ao, a, av, answer_sheet) in tqdm(enumerate(target_dataloader)):
 
             # if i >= 5 : break  # 배리어
@@ -85,113 +87,122 @@ def V_COT(args, dataloader):
             Whole_start_time = time.time()   
             if args.VLM_type in ['Idefics2']:
                 
+                exp1_pred, exp2_pred, exp3_pred, exp4_pred, exp5_pred, exp6_pred = None, None, None, None, None, None
+                
                 # Exp1: Q, I => A =================================================================== #
-                exp1_prompt = [
-                    {"role": "user",
-                     "content": [
-                         {"type": "text", "text": 'Looking at this image, solve the question.'},
-                         {"type": "image"},
-                         {"type": "text", "text": f'Question: {question}'}]}
-                    for question in q_stn]
-                
-                exp1_query = processor.apply_chat_template(exp1_prompt, add_generation_prompt=True)
-                exp1_query_input = processor(text=exp1_query, images=im, return_tensors='pt').to(device)
-                with torch.no_grad():
-                    exp1_pred_id = model.generate(**exp1_query_input, max_new_tokens=50)
-                    exp1_pred = processor.batch_decode(exp1_pred_id, skip_special_tokens=True)
-                
-                for j in range(len(exp1_pred)):
-                    exp1_pred[j] = exp1_pred[j].split('Assistant: ')[-1]
+                if '1' in exp_option:
+                    exp1_prompt = [
+                        {"role": "user",
+                        "content": [
+                            {"type": "text", "text": 'Looking at this image, solve the question'},
+                            {"type": "image"},
+                            {"type": "text", "text": f'Question: {question}'},
+                            {"type": "text", "text": 'Return only the alphabet.'}]}
+                        for question in q_stn]
+                    
+                    exp1_query = processor.apply_chat_template(exp1_prompt, add_generation_prompt=True)
+                    exp1_query_input = processor(text=exp1_query, images=im, return_tensors='pt').to(device)
+                    with torch.no_grad():
+                        exp1_pred_id = model.generate(**exp1_query_input, max_new_tokens=50)
+                        exp1_pred = processor.batch_decode(exp1_pred_id, skip_special_tokens=True)
+                    
+                    for j in range(len(exp1_pred)):
+                        exp1_pred[j] = exp1_pred[j].split('Assistant: ')[-1]
                     
                 # Exp2: Q, I => A, Solving Process ================================================== #
-                exp2_prompt = [
-                    {"role": "user",
-                     "content": [
-                         {"type": "text", "text": 'Looking at this image, solve the question and explain how you solved it step-by-step.'},
-                         {"type": "image"},
-                         {"type": "text", "text": f'Question: {question}'}]}
-                    for question in q_stn]
-                
-                exp2_query = processor.apply_chat_template(exp2_prompt, add_generation_prompt=True)
-                exp2_query_input = processor(text=exp2_query, images=im, return_tensors='pt').to(device)
-                with torch.no_grad():
-                    exp2_pred_id = model.generate(**exp2_query_input, max_new_tokens=500)
-                    exp2_pred = processor.batch_decode(exp2_pred_id, skip_special_tokens=True)
-                
-                for j in range(len(exp2_pred)):
-                    exp2_pred[j] = exp2_pred[j].split('Assistant: ')[-1]
+                if '2' in exp_option:
+                    exp2_prompt = [
+                        {"role": "user",
+                        "content": [
+                            {"type": "text", "text": 'Looking at this image, solve the question and explain how you solved it step-by-step.'},
+                            {"type": "image"},
+                            {"type": "text", "text": f'Question: {question}'}]}
+                        for question in q_stn]
+                    
+                    exp2_query = processor.apply_chat_template(exp2_prompt, add_generation_prompt=True)
+                    exp2_query_input = processor(text=exp2_query, images=im, return_tensors='pt').to(device)
+                    with torch.no_grad():
+                        exp2_pred_id = model.generate(**exp2_query_input, max_new_tokens=500)
+                        exp2_pred = processor.batch_decode(exp2_pred_id, skip_special_tokens=True)
+                    
+                    for j in range(len(exp2_pred)):
+                        exp2_pred[j] = exp2_pred[j].split('Assistant: ')[-1]
                 
                 # Exp3: Q, I => A, Core Visual Patch Coordinates ==================================== #
-                exp3_prompt = [
-                    {"role": "user",
-                     "content": [
-                         {"type": "text", "text": 'Looking at this image, solve the question and return the bounding box coordinates that are the key to solving the problem.'},
-                         {"type": "image"},
-                         {"type": "text", "text": f'Question: {question}'}]}
-                    for question in q_stn]
-                
-                exp3_query = processor.apply_chat_template(exp3_prompt, add_generation_prompt=True)
-                exp3_query_input = processor(text=exp3_query, images=im, return_tensors='pt').to(device)
-                with torch.no_grad():
-                    exp3_pred_id = model.generate(**exp3_query_input, max_new_tokens=500)
-                    exp3_pred = processor.batch_decode(exp3_pred_id, skip_special_tokens=True)
-                
-                for j in range(len(exp3_pred)):
-                    exp3_pred[j] = exp3_pred[j].split('Assistant: ')[-1]
+                if '3' in exp_option:
+                    exp3_prompt = [
+                        {"role": "user",
+                        "content": [
+                            {"type": "text", "text": 'Looking at this image, solve the question and return the bounding box coordinates that are the key to solving the problem.'},
+                            {"type": "image"},
+                            {"type": "text", "text": f'Question: {question}'}]}
+                        for question in q_stn]
+                    
+                    exp3_query = processor.apply_chat_template(exp3_prompt, add_generation_prompt=True)
+                    exp3_query_input = processor(text=exp3_query, images=im, return_tensors='pt').to(device)
+                    with torch.no_grad():
+                        exp3_pred_id = model.generate(**exp3_query_input, max_new_tokens=500)
+                        exp3_pred = processor.batch_decode(exp3_pred_id, skip_special_tokens=True)
+                    
+                    for j in range(len(exp3_pred)):
+                        exp3_pred[j] = exp3_pred[j].split('Assistant: ')[-1]
                     
                 # Exp4: Q, I, GT Reasoning step => A ================================================ #
-                exp4_prompt = [
-                    {"role": "user",
-                     "content": [
-                         {"type": "text", "text": 'Looking at this image and the solving process, answer the question and explain the solution process.'},
-                         {"type": "image"},
-                         {"type": "text", "text": f'Solving process: {reasoning["Reasoning_Step"]}\nQuestion: {question}'}]}
-                    for question, reasoning in zip(q_stn, answer_sheet)]
-                
-                exp4_query = processor.apply_chat_template(exp4_prompt, add_generation_prompt=True)
-                exp4_query_input = processor(text=exp4_query, images=im, return_tensors='pt').to(device)
-                with torch.no_grad():
-                    exp4_pred_id = model.generate(**exp4_query_input, max_new_tokens=500)
-                    exp4_pred = processor.batch_decode(exp4_pred_id, skip_special_tokens=True)
-                
-                for j in range(len(exp4_pred)):
-                    exp4_pred[j] = exp4_pred[j].split('Assistant: ')[-1]                  
+                if '4' in exp_option:
+                    exp4_prompt = [
+                        {"role": "user",
+                        "content": [
+                            {"type": "text", "text": 'Looking at this image and the solving process, answer the question and explain the solution process.'},
+                            {"type": "image"},
+                            {"type": "text", "text": f'Solving process: {reasoning["Reasoning_Step"]}\nQuestion: {question}'}]}
+                        for question, reasoning in zip(q_stn, answer_sheet)]
+                    
+                    exp4_query = processor.apply_chat_template(exp4_prompt, add_generation_prompt=True)
+                    exp4_query_input = processor(text=exp4_query, images=im, return_tensors='pt').to(device)
+                    with torch.no_grad():
+                        exp4_pred_id = model.generate(**exp4_query_input, max_new_tokens=500)
+                        exp4_pred = processor.batch_decode(exp4_pred_id, skip_special_tokens=True)
+                    
+                    for j in range(len(exp4_pred)):
+                        exp4_pred[j] = exp4_pred[j].split('Assistant: ')[-1]                  
                 
                 # Exp5: Q, I, GT Answer sheet => A ================================================== #
-                exp5_prompt = [
-                    {"role": "user",
-                     "content": [
-                         {"type": "text", "text": 'Looking at this image and the solving process, answer the question and explain the solution process.'},
-                         {"type": "image"},
-                         {"type": "text", "text": f'Solving process: {solution["Answer_Sheet"]}\nQuestion: {question}'}]}
-                    for question, solution in zip(q_stn, answer_sheet)]
-                
-                exp5_query = processor.apply_chat_template(exp5_prompt, add_generation_prompt=True)
-                exp5_query_input = processor(text=exp5_query, images=im, return_tensors='pt').to(device)
-                with torch.no_grad():
-                    exp5_pred_id = model.generate(**exp5_query_input, max_new_tokens=500)
-                    exp5_pred = processor.batch_decode(exp5_pred_id, skip_special_tokens=True)
-                
-                for j in range(len(exp5_pred)):
-                    exp5_pred[j] = exp5_pred[j].split('Assistant: ')[-1]  
+                if '5' in exp_option:
+                    exp5_prompt = [
+                        {"role": "user",
+                        "content": [
+                            {"type": "text", "text": 'Looking at this image and the solving process, answer the question and explain the solution process.'},
+                            {"type": "image"},
+                            {"type": "text", "text": f'Solving process: {solution["Answer_Sheet"]}\nQuestion: {question}'}]}
+                        for question, solution in zip(q_stn, answer_sheet)]
+                    
+                    exp5_query = processor.apply_chat_template(exp5_prompt, add_generation_prompt=True)
+                    exp5_query_input = processor(text=exp5_query, images=im, return_tensors='pt').to(device)
+                    with torch.no_grad():
+                        exp5_pred_id = model.generate(**exp5_query_input, max_new_tokens=500)
+                        exp5_pred = processor.batch_decode(exp5_pred_id, skip_special_tokens=True)
+                    
+                    for j in range(len(exp5_pred)):
+                        exp5_pred[j] = exp5_pred[j].split('Assistant: ')[-1]  
                     
                 # Exp6: Q, I, GT Answer sheet => A ================================================== #
-                exp6_prompt = [
-                    {"role": "user",
-                     "content": [
-                         {"type": "text", "text": 'Explain the contents of image.'},
-                         {"type": "image"},
-                         ]}
-                    for question, solution in zip(q_stn, answer_sheet)]
-                
-                exp6_query = processor.apply_chat_template(exp6_prompt, add_generation_prompt=True)
-                exp6_query_input = processor(text=exp6_query, images=im, return_tensors='pt').to(device)
-                with torch.no_grad():
-                    exp6_pred_id = model.generate(**exp6_query_input, max_new_tokens=500)
-                    exp6_pred = processor.batch_decode(exp6_pred_id, skip_special_tokens=True)
-                
-                for j in range(len(exp6_pred)):
-                    exp6_pred[j] = exp6_pred[j].split('Assistant: ')[-1]  
+                if '6' in exp_option:
+                    exp6_prompt = [
+                        {"role": "user",
+                        "content": [
+                            {"type": "text", "text": 'Explain the contents of image.'},
+                            {"type": "image"},
+                            ]}
+                        for question, solution in zip(q_stn, answer_sheet)]
+                    
+                    exp6_query = processor.apply_chat_template(exp6_prompt, add_generation_prompt=True)
+                    exp6_query_input = processor(text=exp6_query, images=im, return_tensors='pt').to(device)
+                    with torch.no_grad():
+                        exp6_pred_id = model.generate(**exp6_query_input, max_new_tokens=500)
+                        exp6_pred = processor.batch_decode(exp6_pred_id, skip_special_tokens=True)
+                    
+                    for j in range(len(exp6_pred)):
+                        exp6_pred[j] = exp6_pred[j].split('Assistant: ')[-1]  
                 
             # Result Logging                                 
             for iter, img_path in enumerate(im_path):
@@ -203,8 +214,8 @@ def V_COT(args, dataloader):
                                          'exp1':exp1_pred[iter],
                                          'exp2':exp2_pred[iter],
                                          'exp3':exp3_pred[iter],
-                                         'exp4':exp4_pred[iter],
-                                         'exp5':exp5_pred[iter],
+                                        #  'exp4':exp4_pred[iter],
+                                        #  'exp5':exp5_pred[iter],
                                          'exp6':exp6_pred[iter],
                                          'GT_option': ao[iter],
                                          'GT_value': o[iter][option_dict[ao[iter]]]}
@@ -269,12 +280,15 @@ if __name__ == "__main__":
     parser.add_argument("--save_root", type=str, default="./V_COT_output/", help="location to save intermediate files.")
     parser.add_argument("--load_ckpt_path", type=str, default=None)
     parser.add_argument("--output_name", type=str, default="dump.json")
+    parser.add_argument("--train_puzzle_list", type=str, default=None)
     parser.add_argument("--test_puzzle_list", type=str, default='1,2,6,7,17,19,40,77')
     parser.add_argument("--eval_tot", type=int, default=3)
     
     # 내가 추가한 Argument List =================================================================== #
     parser.add_argument("--VLM_type", type=str, default='Idefics2')
     parser.add_argument("--gpu_num", type=int, default=0, help="Define GPU used")
+    parser.add_argument("--experiment_number", type=str, default='1,2,3,4,5,6')
+    
     
     
     # 세팅

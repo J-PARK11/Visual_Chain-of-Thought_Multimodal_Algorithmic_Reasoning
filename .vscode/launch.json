@@ -43,12 +43,13 @@
                 "--batch_size", "1",
                 "--data_root", "/data/SMART101-release-v1/SMART101-Data/",
                 "--save_root", "./V_COT_output/",
-                "--output_name", "Pre-trained_Result.json",
-                // "--load_ckpt_path", "checkpoints/full_fine_tuning_sentence/checkpoint-7500",
+                "--output_name", "dump.json",
+                "--load_ckpt_path", "checkpoints/GT_with_rationale_15_shot/checkpoint-4",
                 "--VLM_type", "Idefics2",
                 "--eval_tot", "3",
-                "--test_puzzle_list", "1,2,6,7,17,19,40,77",
+                "--test_puzzle_list", "1,2,6,7,10,17,19,40,77,80,81,82,83,85,88,92,95",// "10",// "80,81,82,83,85,88,92,95",// "1,2,6,7,17,19,40,77,80,81,82,83,85,88,92,95",
                 "--gpu_num", "2",
+                "--experiment_number", "1,2,3,6"
                 ]
         },
 

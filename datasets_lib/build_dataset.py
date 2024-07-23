@@ -49,6 +49,7 @@ class V_COT_collator:
         labels = batch["input_ids"].clone()
         labels[labels == self.processor.tokenizer.pad_token_id] = -100
         labels[labels == self.image_token_id] = -100
+        # labels[:,:-5] = -100
         batch["labels"] = labels
 
         return batch
