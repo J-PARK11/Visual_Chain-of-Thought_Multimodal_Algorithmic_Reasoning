@@ -1,7 +1,7 @@
 import os
 import wandb
 import torch
-from transformers import HfArgumentParser, set_seed, Seq2SeqTrainer
+from transformers import HfArgumentParser, set_seed
 
 import lib.V_COT_globvars as gv
 from config.hf_config import *
@@ -20,6 +20,7 @@ def train():
     parser = HfArgumentParser(
             (DataArguments, ModelArguments, TrainingArguments))
     data_args, model_args, training_args = parser.parse_args_into_dataclasses()
+    print(f'\n{data_args}\n{model_args}\n{training_args}\n')
     set_seed(training_args.seed)
     local_rank = training_args.local_rank
     gv.custom_globals_init()
@@ -30,7 +31,7 @@ def train():
         wandb.run_name = training_args.run_name
     
     # 모델 load...
-    model, processor = get_model(data_args, model_args, training_args)
+    model, processor = get_model('train', data_args, model_args, training_args)
     
     # 데이터로더 load...
     data_module = get_dataset(training_args, model_args, data_args, processor=processor)

@@ -6,14 +6,14 @@ from transformers import BitsAndBytesConfig
 from .Idefics2.processing_idefics2 import Idefics2Processor
 from .Idefics2.modeling_idefics2 import Idefics2ForConditionalGeneration
 
-def get_model(data_args, model_args, training_args):
+def get_model(mode, data_args, model_args, training_args):
 
     if model_args.model_type == "Idefics2-8b":
         processor = Idefics2Processor.from_pretrained(model_args.pretrained_model_path,
                                                   do_image_splitting = model_args.do_image_splitting,
                                                   size= {"longest_edge": 448, "shortest_edge": 378})
         
-        if 'train' in data_args.mode:
+        if 'train' in mode:
             if model_args.USE_LORA :
                 lora_config = LoraConfig(
                     r=model_args.lora_r,
@@ -31,7 +31,16 @@ def get_model(data_args, model_args, training_args):
                         bnb_4bit_compute_dtype=torch.bfloat16
                     )
             
-            model = Idefics2ForConditionalGeneration.from_pretrained(model_args.pretrained_model_path,
+            if model_args.load_ckpt_path:                                                
+                model = Idefics2ForConditionalGeneration.from_pretrained(model_args.load_ckpt_path, 
+                                                                    torch_dtype=torch.bfloat16,
+                                                                    quantization_config=BnB_config if model_args.USE_QLORA else None,
+                                                                    max_length = model_args.max_length, # 20
+                                                                    low_cpu_mem_usage=True)
+                print(f'Load ckpt: {model_args.load_ckpt_path}')
+                
+            else:
+                model = Idefics2ForConditionalGeneration.from_pretrained(model_args.pretrained_model_path,
                                                                     torch_dtype=torch.bfloat16,
                                                                     quantization_config=BnB_config if model_args.USE_QLORA else None,
                                                                     max_length = model_args.max_length, # 20
@@ -40,8 +49,12 @@ def get_model(data_args, model_args, training_args):
                                                                     # _attn_implementation="flash_attention_2"
                                                                     )#.to(training_args.device)
             if model_args.USE_LORA :
-                model.add_adapter(lora_config)
-                model.enable_adapters()
+                if model_args.load_ckpt_path:
+                    adapter_name = 'second_train'
+                else:
+                    adapter_name = 'first_train'
+                    model.add_adapter(lora_config, adapter_name=adapter_name)
+                    model.enable_adapters()
         
         else: # valid, test
             model = Idefics2ForConditionalGeneration.from_pretrained(training_args.load_ckpt_path, 
@@ -52,7 +65,7 @@ def get_model(data_args, model_args, training_args):
     else:
         raise NotImplementedError
 
-    print(f'\nModel Type: {model_args.model_type}, mode: {data_args.mode}, load_ckpt_path: {training_args.load_ckpt_path}')
+    print(f'\nModel Type: {model_args.model_type}, mode: {mode}, load_ckpt_path: {model_args.load_ckpt_path}')
     return model, processor
 
 # default_quantization_config = AwqConfig(

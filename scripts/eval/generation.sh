@@ -1,0 +1,2 @@
+# Only Single GPU
+python generation.py --batch_size 1 --num_workers 8 --save_root ./V_COT_output/ --output_name aug_and_option_loss_checkpoint-672.json --load_ckpt_path checkpoints/aug_and_option_loss/checkpoint-672 --test_puzzle_list 1,2,6,7,10,17,19,40,77 --eval_tot 3 --gpu_num 1

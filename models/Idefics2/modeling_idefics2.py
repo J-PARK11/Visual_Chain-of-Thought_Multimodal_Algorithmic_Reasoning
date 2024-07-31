@@ -1696,6 +1696,10 @@ class Idefics2ForConditionalGeneration(Idefics2PreTrainedModel):
 
         self.lm_head = nn.Linear(config.text_config.hidden_size, config.text_config.vocab_size, bias=False)
         self.vocab_size = config.text_config.vocab_size
+        
+        self.option_softmax = nn.Softmax()
+        self.option_id = [330, 365, 334, 384, 413] # [A, B, C, D, E]
+        self.option_ground_dict = {330:0, 365:1, 334:2, 384:3, 413:4}
 
         # Initialize weights and apply final processing
         self.post_init()
@@ -1843,7 +1847,7 @@ class Idefics2ForConditionalGeneration(Idefics2PreTrainedModel):
         logits = self.lm_head(hidden_states)
         logits = logits.float()
 
-        loss = None
+        loss, option_loss = None, None
         if labels is not None:
             labels = labels.to(logits.device)
             
@@ -1856,11 +1860,35 @@ class Idefics2ForConditionalGeneration(Idefics2PreTrainedModel):
                 shift_logits = logits[..., :-1, :].contiguous()
                 shift_labels = labels[..., 1:].contiguous()
             
-            # Flatten the tokens
+            # Calculate Loss
             loss_fct = CrossEntropyLoss()
+            sentence_loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
+            
+            # 옵션 손실 함수 개발 부분.
+            option_gt_id = int(shift_labels.view(-1)[-3])
+            if option_gt_id in self.option_ground_dict:
+                pass
+            else:
+                option_gt_id = int(shift_labels.view(-1)[-2])
+                if option_gt_id in self.option_ground_dict:
+                    pass
+                else:
+                    option_gt_id=None
+            
+            if option_gt_id:                
+                option_pred, option_gt = shift_logits.view(-1, shift_logits.size(-1))[-3][self.option_id], torch.tensor(self.option_ground_dict[option_gt_id]).to(sentence_loss.device)
+                option_pred_sfm = self.option_softmax(option_pred)
+                option_loss = loss_fct(option_pred_sfm, option_gt)
+                loss = (sentence_loss + option_loss)
+            else:
+                loss = sentence_loss
+            
+            # loss = sentence_loss
             
             # shift_labels[:-5] = -100
-            loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
+            # print(option_pred)
+            # print(option_gt, option_pred_sfm)
+            # option_loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1))[-3], shift_labels.view(-1)[-3])*10
             # loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1))[-5:], shift_labels.view(-1)[-5:])
 
         if not return_dict:
@@ -1868,6 +1896,7 @@ class Idefics2ForConditionalGeneration(Idefics2PreTrainedModel):
             return (loss,) + output if loss is not None else output
         return Idefics2CausalLMOutputWithPast(
             loss=loss,
+            # option_loss=option_loss,
             logits=logits,
             past_key_values=outputs.past_key_values,
             hidden_states=outputs.hidden_states,

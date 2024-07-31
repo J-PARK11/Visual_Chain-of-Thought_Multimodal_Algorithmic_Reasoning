@@ -23,7 +23,7 @@ def eval():
     gv.custom_globals_init()
     
     # 모델 load...
-    model, processor = get_model(data_args, model_args, training_args)
+    model, processor = get_model('test', data_args, model_args, training_args)
     
     # 데이터로더 load...
     data_module = get_dataset(training_args, model_args, data_args, processor=processor)

@@ -22,7 +22,7 @@ class V_COT_collator:
     def __call__(self, examples):
         texts = []
         images = []
-        for idx, (image, im_p, pids, question, opts, answer_option, lbl, answer, answer_sheet) in enumerate(examples):
+        for idx, (image, im_p, pids, question, opts, answer_option, lbl, answer) in enumerate(examples):
             question = "Question: " + question
             messages = [
                 {
@@ -41,6 +41,7 @@ class V_COT_collator:
                 }
             ]
             text = self.processor.apply_chat_template(messages, add_generation_prompt=False)
+            
             texts.append(text.strip())
             images.append([image])
 
@@ -49,7 +50,6 @@ class V_COT_collator:
         labels = batch["input_ids"].clone()
         labels[labels == self.processor.tokenizer.pad_token_id] = -100
         labels[labels == self.image_token_id] = -100
-        # labels[:,:-5] = -100
         batch["labels"] = labels
 
         return batch

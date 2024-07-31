@@ -33,23 +33,56 @@
         },
 
         {
-            "name": "inference.py",
+            "name": "generation.py",
             "type": "debugpy",
             "request": "launch",
-            "program": "inference.py",
+            "program": "generation.py",
+            "console": "integratedTerminal",
+            "args": [ 
+                "--num_workers", "8",
+                "--batch_size", "1",
+                "--save_root", "./V_COT_output/",
+                "--output_name", "aug_and_option_loss_checkpoint-672.json",
+                "--load_ckpt_path", "checkpoints/aug_and_option_loss/checkpoint-672",
+                "--VLM_type", "Idefics2",
+                "--eval_tot", "3",
+                "--test_puzzle_list", "1,2,6,7,10,17,19,40,77",// "10",// "80,81,82,83,85,88,92,95",// "1,2,6,7,17,19,40,77,80,81,82,83,85,88,92,95",
+                "--gpu_num", "3",
+                "--experiment_number", "2,6"
+                ]
+        },
+
+        {
+            "name": "gpt_paraphrasing.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "GPT_paraphrasing.py",
             "console": "integratedTerminal",
             "args": [ 
                 "--num_workers", "8",
                 "--batch_size", "1",
                 "--data_root", "/data/SMART101-release-v1/SMART101-Data/",
                 "--save_root", "./V_COT_output/",
-                "--output_name", "dump.json",
-                "--load_ckpt_path", "checkpoints/GT_with_rationale_15_shot/checkpoint-4",
+                "--input_name", "./V_COT_output/GT/GT_rationale_dataset_develop.json",
+                "--output_name", "gpt_paraphrasing_result.json",
                 "--VLM_type", "Idefics2",
-                "--eval_tot", "3",
-                "--test_puzzle_list", "1,2,6,7,10,17,19,40,77,80,81,82,83,85,88,92,95",// "10",// "80,81,82,83,85,88,92,95",// "1,2,6,7,17,19,40,77,80,81,82,83,85,88,92,95",
-                "--gpu_num", "2",
-                "--experiment_number", "1,2,3,6"
+                "--gpu_num", "3",
+                ]
+        },
+
+        {
+            "name": "gpt_augmentation.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "GPT_augmentation.py",
+            "console": "integratedTerminal",
+            "args": [ 
+                "--num_workers", "8",
+                "--batch_size", "1",
+                "--data_root", "/data/SMART101-release-v1/SMART101-Data/",
+                "--save_root", "./V_COT_output/",
+                "--output_name", "gpt_augmentation_result.json",
+                "--VLM_type", "Idefics2",
                 ]
         },
 
