@@ -10,12 +10,9 @@ git clone git@github.com:J-PARK11/Visual_Chain-of-Thought_Multimodal_Algorithmic
 
 ## 🌄 Setting environment (For KT)
 
-Docker hub에 올라와 있는 이미지를 다운로드해서 컨테이너를 굽고, 저장소에 소스 파일을 가져오는 방식.
-
 ```bash
-docker pull jpark11/***************
-docker run -it --gpus '"device=0,1,2,3,4,5,6,7"' --ipc=host --name {container_name} -v /media/data2/SMART101/:/data -v {your_home_directory_path}:/SMART101 42a0e9b621e2
 git clone git@github.com:J-PARK11/Visual_Chain-of-Thought_Multimodal_Algorithmic_Reasoning.git
+pip install -r requirements.txt
 ```
 
 ## 🎮 Quick Start
