@@ -10,7 +10,7 @@ from openai import OpenAI
 import lib.V_COT_globvars as gv
 import datasets_lib.V_COT_data_loader as dl
 
-os.environ["OPENAI_API_KEY"] = "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"
+os.environ["OPENAI_API_KEY"] = ""
 
 def get_data_loader(args, batch_size=100, shuffle=False, num_workers=6, pin_memory=True):
     args.preprocess = None
