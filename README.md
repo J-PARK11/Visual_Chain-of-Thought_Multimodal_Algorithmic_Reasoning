@@ -18,11 +18,11 @@ pip install -r requirements.txt
 
 ## 🎮 Quick Start
 - 스크립트는 크게 *Train*, *Evaluation*, *Data Generation* 세션으로 구성되어 있음.
-- 주로 generation.sh로 답변을 생성하며, 이 파일만 Single GPU기반이고, 나머지는 다 DDP 세팅이다.
 - 각 스크립트의 주된 내용은 "hf_config.py"에 있는 DataArguments.task에 따라 결정되는데 크게 {'custom', 'supervised', 'zero_shot', 'GT_with_rationale', 'GPT_augmentation_generation', 'GPT_augmentation_train'}으로 구성된다.
 - 각 puzzle_list는 학습 혹은 검증에 쓰일 퍼즐의 pid를 의미하고, tot는 instance puzzle의 수를 의미한다.
 - 현재 스크립트에 기재된 argument들은 모두 Default로 설정함. 실제 개발할 때 건드리는 파일은 train.sh이다.
-- val,test_puzzle_list에 기본 인자로 들어간 퍼즐들은 카테고리 별로 균등하게 넣은 것이다.        
+- val,test_puzzle_list에 기본 인자로 들어간 퍼즐들은 카테고리 별로 균등하게 넣은 것이다.    
+- 주로 generation.sh로 답변을 생성하며 이 파일만 Single GPU기반이고 1 배치 밖에 지원하지 않는다., 나머지는 다 DDP 세팅이다.    
 - 모든 task는 python debugging console을 통한 debugging process를 지원한다.
 
 ```bash
