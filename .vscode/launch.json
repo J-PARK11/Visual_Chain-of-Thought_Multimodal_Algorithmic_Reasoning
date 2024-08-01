@@ -71,7 +71,7 @@
         },
 
         {
-            "name": "gpt_augmentation.py",
+            "name": "gpt_augmentation_generation.py",
             "type": "debugpy",
             "request": "launch",
             "program": "GPT_augmentation.py",
@@ -79,10 +79,10 @@
             "args": [ 
                 "--num_workers", "8",
                 "--batch_size", "1",
-                "--data_root", "/data/SMART101-release-v1/SMART101-Data/",
                 "--save_root", "./V_COT_output/",
-                "--output_name", "gpt_augmentation_result.json",
-                "--VLM_type", "Idefics2",
+                "--output_name", "gpt_augmentation_result",
+                "--train_tot", "1",
+                "--phase", "1/1"
                 ]
         },
 

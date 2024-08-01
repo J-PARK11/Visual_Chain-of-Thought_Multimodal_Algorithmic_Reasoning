@@ -1,5 +1,6 @@
 import os
 import pdb
+import math
 import json
 import torch
 import random
@@ -28,8 +29,14 @@ class V_COT_SMART101_Dataset(Dataset):
             if args.task == 'custom':
                 self.puzzle_list = args.train_puzzle_list
                 puzzle_ids = self.puzzle_list.split(',')             
-            elif args.task in ['supervised', 'GT_with_rationale', 'GPT_paraphrasing', 'GPT_augmentation_generation', 'GPT_augmentation_train']:
+            elif args.task in ['supervised', 'GT_with_rationale', 'GPT_paraphrasing', 'GPT_augmentation_train']:
                 puzzle_ids = [f'{pz_id}' for pz_id in range(1,102)]
+            elif args.task == 'GPT_augmentation_generation':
+                puzzle_ids = [f'{pz_id}' for pz_id in range(1,102)]
+                phase, phase_num = int(args.phase[0]), int(args.phase[-1])
+                unit = math.ceil(len(puzzle_ids) / phase_num)
+                start_idx, end_idx = unit*(phase-1), unit*phase
+                puzzle_ids = puzzle_ids[start_idx:end_idx]
             elif args.task == 'zero_shot':
                 puzzle_ids = [f'{pz_id}' for pz_id in range(1,102)]
                 puzzle_ids = sorted(list(set(puzzle_ids) - set(['1','2','6','7','17','19','40','77'])))
@@ -57,7 +64,7 @@ class V_COT_SMART101_Dataset(Dataset):
         """
         
         # GT with Rationale
-        if args.task == 'GT_with_rationale':
+        if args.task in ['GT_with_rationale', 'GPT_augmentation_generation']:
             self.GT_with_rationale_dict_path = args.GT_with_rationale_dict_path
             with open(self.GT_with_rationale_dict_path,'r') as f:
                 self.GT_with_rationale = json.load(f)

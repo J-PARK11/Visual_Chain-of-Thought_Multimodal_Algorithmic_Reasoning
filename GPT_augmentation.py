@@ -1,4 +1,5 @@
 import os
+import time
 import json
 import torch
 import base64
@@ -34,16 +35,26 @@ def encode_image(image_path):
 
 def augmentation(args, target_dataloader):
     client = OpenAI()    
-    new_json = dict()
     option_dict = {0:'A', 1:'B', 2:'C', 3:'D', 4:'E'}     
-    prompt = "Here is the solution process and answer for a example puzzle similar to the ones you will solve. Please refer to this answer to transform the solution process for the upcoming puzzle and question. dont include question it self."
+    prompt = "Here is the solution process and answer for a example puzzle similar to the ones you will solve. \
+        Please refer to this answer to transform the solution process for the upcoming puzzle and question. \
+        dont include question it self."
+    phase, phase_num = int(args.phase[0]), int(args.phase[-1])
     
-    puzzle_len  = int(len(target_dataloader) / args.train_tot)
+    # 로거 정의.
+    output_name = args.output_name + f'_{phase}_{phase_num}.json'
+    logger_name = 'gpt_aug_logger' + f'_{phase}_{phase_num}.txt'
+    if os.path.isfile(output_name):
+        os.remove(output_name)
+    if os.path.isfile(logger_name):
+        os.remove(logger_name)
+    
     print("\n========== GPT Instance Puzzle Augmentation ==========")
+    puzzle_len  = int(len(target_dataloader) / args.train_tot)
     print(f'Batch Size: {args.batch_size}, #puzzle: {puzzle_len}, #instance: {args.train_tot}, #Data: {len(target_dataloader)}\n')
     for i, (im, im_path, pids, q_stn, o, ao, a, av) in tqdm(enumerate(target_dataloader)):
         img_name = im_path[0].split('/')[-1]    
-        im = encode_image(im_path[0]) #불러온 csv에서 이미지의 이름을 찾고 이미지 경로에서 이미지 불러오기                
+        im = encode_image(im_path[0])
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
@@ -57,15 +68,20 @@ def augmentation(args, target_dataloader):
                 ]}
             ],
         temperature=0.5)
-        new_json[img_name] = dict()
-        new_json[img_name][f'GT_with_Rationale'] = response.choices[0].message.content
-        print(f'{img_name}, loop_index: {i}')
+        
+        if True:
+            output = dict()
+            output[img_name] = dict()
+            output[img_name]['GT_with_Rationale'] = response.choices[0].message.content
+            with open(output_name, 'a') as output_log:
+                output_log.write(json.dumps(output))
+        else:
+            with open(output_name, 'a') as except_log:
+                except_log.write(f'{img_name}\n')
+
+        print(f'{img_name}, loop_index: {i}/{puzzle_len}, state: True')
         # print(img_name, response.choices[0].message.content)
     
-    # Save the JSON data to a file
-    with open(args.output_name, "w") as json_file:
-        json.dump(new_json, json_file, indent=4)  # Use indentation for better readability
-
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser(description="SMART dataset")
@@ -78,9 +94,11 @@ if __name__ == "__main__":
         help="location of the csv files, and location of the images, relative location is provided in the csv file.",
     )
     parser.add_argument("--save_root", type=str, default="./V_COT_output/", help="location to save intermediate files.")
-    parser.add_argument("--input_name", type=str, default="dump.json")
     parser.add_argument("--output_name", type=str, default="./V_COT_output/GT/GT_rationale_dataset_develop.json")
-    parser.add_argument("--train_puzzle_list", type=str, default='GPT_augmentation')
+    parser.add_argument("--GT_with_rationale_dict_path", type=str, default='./V_COT_output/GT/GT_rationale_dataset_develop.json')
+    parser.add_argument("--task", type=str, default='GPT_augmentation_generation')
+    parser.add_argument("--phase", type=str, default='1/4')
+    parser.add_argument("--train_puzzle_list", type=str, default=None)
     parser.add_argument("--train_tot", type=int, default=1000)
     
     # 내가 추가한 Argument List =================================================================== #
