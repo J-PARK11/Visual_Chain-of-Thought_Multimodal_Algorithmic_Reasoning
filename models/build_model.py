@@ -57,10 +57,16 @@ def get_model(mode, data_args, model_args, training_args):
                     model.enable_adapters()
         
         else: # valid, test
-            model = Idefics2ForConditionalGeneration.from_pretrained(training_args.load_ckpt_path, 
+            if model_args.load_ckpt_path:                                                
+                model = Idefics2ForConditionalGeneration.from_pretrained(model_args.load_ckpt_path, 
+                                                                        torch_dtype=torch.bfloat16,
+                                                                        max_length=model_args.max_length,
+                                                                        low_cpu_mem_usage=True)            
+            else:
+                model = Idefics2ForConditionalGeneration.from_pretrained(model_args.pretrained_model_path, 
                                                                     torch_dtype=torch.bfloat16,
                                                                     max_length=model_args.max_length,
-                                                                    low_cpu_mem_usage=True)            
+                                                                    low_cpu_mem_usage=True)     
             
     else:
         raise NotImplementedError

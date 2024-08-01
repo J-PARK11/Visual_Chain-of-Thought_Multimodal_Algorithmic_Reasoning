@@ -114,7 +114,7 @@ class V_COT_SMART101_Dataset(Dataset):
             self.qa_info = self.qa_info + qa_info
         
         # 학습 데이터는 셔플.
-        if self.mode == 'train':
+        if self.mode == 'train' and args.task != 'GPT_augmentation_generation':
             random.seed(1123)
             random.shuffle(self.qa_info)
             print('Train Dataset shuffled')
