@@ -17,9 +17,11 @@ class DataArguments():
     train_tot: int=field(default=1000)
     eval_tot: int=field(default=3)
     add_data: str=field(default=None)
+    gpt_data_include_level: int=field(default=2)
+    USE_DPR: int=field(default=None)
     GT_with_rationale_dict_path: str=field(default='./V_COT_output/GT/GT_rationale_dataset_develop.json')
     GPT_paraphrasing_dict_path: str=field(default='./V_COT_output/GT/gpt_paraphrasing_result.json')
-    GPT_augmentation_dict_path: str=field(default='./V_COT_output/GT/gpt_augmentation_result.json')
+    GPT_augmentation_dict_path: str=field(default='./V_COT_output/GPT_aug/GPT_augmented_101000/gpt_augmentation_result_total.json')
     
     # {'custom', 'supervised', 'zero_shot', 'GT_with_rationale', 'GPT_augmentation_generation', 'GPT_augmentation_train'}
     # 1, 2, 6, 7, 19, 40, 44, 77

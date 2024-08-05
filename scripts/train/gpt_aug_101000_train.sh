@@ -11,7 +11,7 @@ torchrun --nproc_per_node 4 train.py \
     --per_device_eval_batch_size 1 \
     --gradient_accumulation_steps 2 \
     --report_to wandb \
-    --logging_steps 40 \
+    --logging_steps 20 \
     --evaluation_strategy steps \
     --eval_steps 40 \
     --save_strategy epoch \

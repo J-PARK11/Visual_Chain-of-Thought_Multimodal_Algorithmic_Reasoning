@@ -75,8 +75,9 @@ def V_COT(args, dataloader):
 
     # V_COT 실행 ============================================================= #
     def Execute(epoch, args, target_dataloader):
+        TP, ALL = 0, len(target_dataloader)
         puzzle_len  = len(args.test_puzzle_list.split(','))
-        print(f'Batch Size: {args.batch_size}, #puzzle: {puzzle_len}, #instance: {args.eval_tot}, #Data: {len(target_dataloader)}\n')
+        print(f'Batch Size: {args.batch_size}, #puzzle: {puzzle_len}, #instance: {args.eval_tot}, #Data: {ALL}\n')
         for i, (im, im_path, pids, q_stn, o, ao, a, av) in tqdm(enumerate(target_dataloader)):
 
             # if i >= 5 : break  # 배리어
@@ -91,83 +92,94 @@ def V_COT(args, dataloader):
                 exp1_prompt = [
                     {"role": "user",
                     "content": [
-                        {"type": "text", "text": 'Looking at this image, solve the question'},
+                        {"type": "text", "text": 'Looking at this image, solve the question. Please return only answer like this: Answer: ?'},
                         {"type": "image"},
-                        {"type": "text", "text": f'Question: {question}'},
-                        {"type": "text", "text": 'Return only the alphabet.'}]}
+                        {"type": "text", "text": f'Question: {question}'}]}
                     for question in q_stn]
                 
                 exp1_query = processor.apply_chat_template(exp1_prompt, add_generation_prompt=True)
                 exp1_query_input = processor(text=exp1_query, images=im, return_tensors='pt').to(device)
                 with torch.no_grad():
-                    exp1_pred_id = model.generate(**exp1_query_input, max_new_tokens=50)
+                    exp1_pred_id = model.generate(**exp1_query_input, max_new_tokens=500)
                     exp1_pred = processor.batch_decode(exp1_pred_id, skip_special_tokens=True)
                 
                 for j in range(len(exp1_pred)):
                     exp1_pred[j] = exp1_pred[j].split('Assistant: ')[-1]
                     
-                # Exp2: Q, I => A, Solving Process ================================================== #
-                exp2_prompt = [
-                    {"role": "user",
-                    "content": [
-                        {"type": "text", "text": 'Looking at this image, solve the question and explain how you solved it step-by-step.'},
-                        {"type": "image"},
-                        {"type": "text", "text": f'Question: {question}'}]}
-                    for question in q_stn]
+                # # Exp2: Q, I => A, Solving Process ================================================== #
+                # exp2_prompt = [
+                #     {"role": "user",
+                #     "content": [
+                #         {"type": "text", "text": 'Looking at this image, solve the question and explain how you solved it step-by-step.'},
+                #         {"type": "image"},
+                #         {"type": "text", "text": f'Question: {question}'}]}
+                #     for question in q_stn]
                 
-                exp2_query = processor.apply_chat_template(exp2_prompt, add_generation_prompt=True)
-                exp2_query_input = processor(text=exp2_query, images=im, return_tensors='pt').to(device)
-                with torch.no_grad():
-                    exp2_pred_id = model.generate(**exp2_query_input, max_new_tokens=500)
-                    exp2_pred = processor.batch_decode(exp2_pred_id, skip_special_tokens=True)
+                # exp2_query = processor.apply_chat_template(exp2_prompt, add_generation_prompt=True)
+                # exp2_query_input = processor(text=exp2_query, images=im, return_tensors='pt').to(device)
+                # with torch.no_grad():
+                #     exp2_pred_id = model.generate(**exp2_query_input, max_new_tokens=500)
+                #     exp2_pred = processor.batch_decode(exp2_pred_id, skip_special_tokens=True)
                 
-                for j in range(len(exp2_pred)):
-                    exp2_pred[j] = exp2_pred[j].split('Assistant: ')[-1]
+                # for j in range(len(exp2_pred)):
+                #     exp2_pred[j] = exp2_pred[j].split('Assistant: ')[-1]
                     
-                # Exp6: Q, I, GT Answer sheet => A ================================================== #
-                exp6_prompt = [
-                    {"role": "user",
-                    "content": [
-                        {"type": "text", "text": 'Explain the contents of image.'},
-                        {"type": "image"},
-                        ]}
-                    for question in q_stn]
+                # # Exp6: Q, I, GT Answer sheet => A ================================================== #
+                # exp6_prompt = [
+                #     {"role": "user",
+                #     "content": [
+                #         {"type": "text", "text": 'Explain the contents of image.'},
+                #         {"type": "image"}]}
+                #     for question in q_stn]
                 
-                exp6_query = processor.apply_chat_template(exp6_prompt, add_generation_prompt=True)
-                exp6_query_input = processor(text=exp6_query, images=im, return_tensors='pt').to(device)
-                with torch.no_grad():
-                    exp6_pred_id = model.generate(**exp6_query_input, max_new_tokens=500)
-                    exp6_pred = processor.batch_decode(exp6_pred_id, skip_special_tokens=True)
+                # exp6_query = processor.apply_chat_template(exp6_prompt, add_generation_prompt=True)
+                # exp6_query_input = processor(text=exp6_query, images=im, return_tensors='pt').to(device)
+                # with torch.no_grad():
+                #     exp6_pred_id = model.generate(**exp6_query_input, max_new_tokens=500)
+                #     exp6_pred = processor.batch_decode(exp6_pred_id, skip_special_tokens=True)
                 
-                for j in range(len(exp6_pred)):
-                    exp6_pred[j] = exp6_pred[j].split('Assistant: ')[-1]  
+                # for j in range(len(exp6_pred)):
+                #     exp6_pred[j] = exp6_pred[j].split('Assistant: ')[-1]
                 
             # Result Logging                                 
             for iter, img_path in enumerate(im_path):
+                
+                st = exp1_pred[iter].upper().find('ANSWER: ')
+                if st<0:
+                    ALL-=1
+                    hit = False
+                else:
+                    ed = st + 9
+                    pred_answer = exp1_pred[iter][st:ed][-1]
+                    hit = (pred_answer == ao[iter])
+                    if hit : TP+=1
+                
                 log_dict=dict()
                 img_name = img_path.split('/')[-1]                    
                 question = q_stn[iter]
                 result_json[img_name] = {'Question': question,
                                          'Only_answer':exp1_pred[iter],
-                                         'Answer_with_Reasoning':exp2_pred[iter],
-                                         'Image_Caption':exp6_pred[iter],
+                                        #  'Answer_with_Reasoning':exp2_pred[iter],
+                                        #  'Image_Caption':exp6_pred[iter],
                                          'GT_option': ao[iter],
-                                         'GT_value': o[iter][option_dict[ao[iter]]]}
+                                         'GT_value': o[iter][option_dict[ao[iter]]],
+                                         'Hit': hit}
                 
-                print('\n', img_name, exp2_pred[iter])
-                puzzle_save_path = os.path.join(args.save_root, 'puzzle', str(int(pids)), img_name)
-                plt.figure(figsize=(6,6))
-                plt.suptitle(f'V-COT Reasoning: "{img_name}"')
-                plt.imshow(im[iter][0])
-                plt.axis('off')
-                plt.savefig(puzzle_save_path)
-                plt.clf()
-                    
+                # print('\n', img_name, exp2_pred[iter])
+                # puzzle_save_path = os.path.join(args.save_root, 'puzzle', str(int(pids)), img_name)
+                # plt.figure(figsize=(6,6))
+                # plt.suptitle(f'V-COT Reasoning: "{img_name}"')
+                # plt.imshow(im[iter][0])
+                # plt.axis('off')
+                # plt.savefig(puzzle_save_path)
+                # plt.clf()
+
                 # ================================================================ #
                     
             Whole_end_time = time.time()
             Whole_dur_time = Whole_end_time - Whole_start_time
             print(f' Batch: {i}/{len(target_dataloader)}  Dur_time: {Whole_dur_time:.4f} for {len(im)} images')
+            print(f"Accuracy = {TP}/{ALL} = {TP/ALL:.4f}")
 
     for epoch in range(1):
 

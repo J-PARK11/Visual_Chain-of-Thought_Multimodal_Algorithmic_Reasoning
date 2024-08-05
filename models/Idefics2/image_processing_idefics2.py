@@ -421,6 +421,24 @@ class Idefics2ImageProcessor(BaseImageProcessor):
             self._crop(image, mid_width, mid_height, width, height, input_data_format),
             image,
         ]
+        
+        """
+        div1_width, div2_width = width // 3, 2 * width // 3
+        div1_height, div2_height = height // 3, 2 * height // 3
+        return [
+            self._crop(image, 0, 0, div1_width, div1_height, input_data_format),
+            self._crop(image, div1_width, 0, div2_width, div1_height, input_data_format),
+            self._crop(image, div2_width, 0, width, div1_height, input_data_format),
+            
+            self._crop(image, 0, div1_height, div1_width, div2_height, input_data_format),
+            self._crop(image, div1_width, div1_height, div2_width, div2_height, input_data_format),
+            self._crop(image, div2_width, div1_height, width, div2_height, input_data_format),
+            
+            self._crop(image, 0, div2_height, div1_width, height, input_data_format),
+            self._crop(image, div1_width, div2_height, div2_width, height, input_data_format),
+            self._crop(image, div2_width, div2_height, width, height, input_data_format),
+        ]
+        """
 
     def preprocess(
         self,
@@ -538,6 +556,7 @@ class Idefics2ImageProcessor(BaseImageProcessor):
             # We assume that all images have the same channel dimension format.
             input_data_format = infer_channel_dimension_format(images_list[0][0])
 
+        # Image Splitting하는 부분. 
         if do_image_splitting:
             new_images_list = []
             for images in images_list:

@@ -11,7 +11,7 @@ from openai import OpenAI
 import lib.V_COT_globvars as gv
 import datasets_lib.V_COT_data_loader as dl
 
-os.environ["OPENAI_API_KEY"] = ""
+os.environ["OPENAI_API_KEY"] = "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"
 
 def get_data_loader(args, batch_size=100, shuffle=False, num_workers=6, pin_memory=True):
     args.preprocess = None
@@ -42,6 +42,15 @@ def augmentation(args, target_dataloader):
     # 로거 정의.
     output_name = os.path.join('V_COT_output', 'GPT_aug', args.output_name + f'_{phase}_{phase_num}.json')
     except_name = os.path.join('V_COT_output', 'GPT_aug', 'gpt_aug_exception' + f'_{phase}_{phase_num}.json')
+    
+    # Exception 채울때만 사용.
+    output_name = os.path.join('V_COT_output', 'GPT_aug', args.output_name + f'exception_supply.json')
+    except_dir_path = os.path.join('V_COT_output', 'GPT_aug', 'gpt_aug_exception_total.json')
+    with open(except_dir_path, "r") as ed:
+        except_dir = json.load(ed)
+    except_list = list(except_dir.keys())
+    print(f'Excepted Puzzle: #{len(except_list)}')
+    
     if os.path.isfile(output_name):
         os.remove(output_name)
     if os.path.isfile(except_name):
@@ -56,6 +65,11 @@ def augmentation(args, target_dataloader):
     for i, (im, im_path, pids, q_stn, o, ao, a, av) in tqdm(enumerate(target_dataloader)):
         img_name = im_path[0].split('/')[-1]    
         im = encode_image(im_path[0])
+        
+        # Exception 채울 때만 사용.
+        if img_name not in except_list:
+            continue
+        
         # 600자 제한 걸기.
         try:
             state="Success"
@@ -72,7 +86,7 @@ def augmentation(args, target_dataloader):
                     ]}
                 ],
             temperature=0.5, max_tokens=600)
-            augmented_text = response.choices[0].message.content.strip().replace('\n\n', '\n')
+            augmented_text = response.choices[0].message.content.strip().replace('\n\n', '\n').replace('\\', '').replace('   ', ' ')
             output_log[img_name] = dict()
             output_log[img_name]['GT_with_Rationale'] = augmented_text
                 
@@ -88,7 +102,7 @@ def augmentation(args, target_dataloader):
             with open(except_name, "w") as fe:
                 json.dump(except_log, fe)
 
-        print(f'{img_name}, loop_index: {i}/{puzzle_len}, state: {state}')
+        print(f'{img_name}, loop_index: {i}/{len(target_dataloader)}, state: {state}')
     
     # 마무리 저장.
     with open(output_name, "w") as f:

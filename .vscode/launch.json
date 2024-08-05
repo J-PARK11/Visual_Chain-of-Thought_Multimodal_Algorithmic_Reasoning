@@ -9,11 +9,25 @@
             "program": "train.py",
             "console": "integratedTerminal",
             "args": [ 
+                "--task", "GPT_augmentation_train",
                 "--run_name", "debugging_console",
                 "--output_dir", "./checkpoints/dump/",
-                "--num_train_epochs", "2",
+                "--num_train_epochs", "3",
                 "--per_device_train_batch_size", "1",
                 "--per_device_eval_batch_size", "1",
+                "--train_tot", "1000",
+                "--eval_tot", "3",
+                "--gradient_accumulation_steps", "1",
+                "--report_to", "wandb",
+                "--logging_steps", "20",
+                "--evaluation_strategy", "steps",
+                "--eval_steps", "20",
+                "--save_strategy", "epoch",
+                "--save_steps", "1500",
+                "--save_total_limit", "20",
+                "--gpt_data_include_level", "2",
+                "--val_puzzle_list", "94,95,96,97,98,99,101,61,62,65,66,67,69,70,71,72,73,74,75,76,77",
+                "--test_puzzle_list", "94,95,96,97,98,99,101,61,62,65,66,67,69,70,71,72,73,74,75,76,77",
                 ]
         },
         
@@ -25,10 +39,8 @@
             "console": "integratedTerminal",
             "args": [ 
                 "--output_dir", "./checkpoints/dump/",
-                // "--num_train_epochs", "1",
                 "--per_device_train_batch_size", "2",
                 "--per_device_eval_batch_size", "2",
-                // "--load_cpkt_path", "checkpoints/dump/checkpoint-16000"
                 ]
         },
 
@@ -42,13 +54,12 @@
                 "--num_workers", "8",
                 "--batch_size", "1",
                 "--save_root", "./V_COT_output/",
-                "--output_name", "aug_and_option_loss_checkpoint-672.json",
-                "--load_ckpt_path", "checkpoints/aug_and_option_loss/checkpoint-672",
+                "--output_name", "gpt_aug_level2_ckpt_000_acc_test.json",
+                "--load_ckpt_path", "checkpoints/GPT_aug_level2_train/checkpoint-000",
                 "--VLM_type", "Idefics2",
-                "--eval_tot", "3",
-                "--test_puzzle_list", "1,2,6,7,10,17,19,40,77",// "10",// "80,81,82,83,85,88,92,95",// "1,2,6,7,17,19,40,77,80,81,82,83,85,88,92,95",
-                "--gpu_num", "3",
-                "--experiment_number", "2,6"
+                "--test_puzzle_list", "94,95,96,97,98,99,101,61,62,65,66,67,69,70,71,72,73,74,75,76,77",
+                "--eval_tot", "100",
+                "--gpu_num", "1",
                 ]
         },
 
@@ -81,8 +92,8 @@
                 "--batch_size", "1",
                 "--save_root", "./V_COT_output/",
                 "--output_name", "gpt_augmentation_result",
-                "--train_tot", "1",
-                "--phase", "1/1"
+                "--train_tot", "1000",
+                "--phase", "1_4"
                 ]
         },
 

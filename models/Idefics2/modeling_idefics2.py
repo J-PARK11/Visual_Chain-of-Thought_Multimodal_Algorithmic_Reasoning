@@ -130,7 +130,7 @@ class Idefics2CausalLMOutputWithPast(ModelOutput):
     attentions: Optional[Tuple[torch.FloatTensor]] = None
     image_hidden_states: Optional[Tuple[torch.FloatTensor]] = None
 
-
+# SigLip500M-VisionEmbedding
 class Idefics2VisionEmbeddings(nn.Module):
     """
     This is a modified version of `siglip.modelign_siglip.SiglipVisionEmbeddings` to enable images of variable
@@ -668,15 +668,15 @@ class Idefics2Encoder(nn.Module):
             last_hidden_state=hidden_states, hidden_states=encoder_states, attentions=all_attentions
         )
 
-
+# SigLip500M
 class Idefics2VisionTransformer(nn.Module):
     def __init__(self, config: Idefics2VisionConfig):
         super().__init__()
         embed_dim = config.hidden_size
 
         self.config = config
-        self.embeddings = Idefics2VisionEmbeddings(config)
-        self.encoder = Idefics2Encoder(config)
+        self.embeddings = Idefics2VisionEmbeddings(config) # SigLip500M-VisionEmbeddings
+        self.encoder = Idefics2Encoder(config) # SigLip500M-Encoder
         self.post_layernorm = nn.LayerNorm(embed_dim, eps=config.layer_norm_eps)
         self._use_flash_attention_2 = config._attn_implementation == "flash_attention_2"
 
@@ -1162,7 +1162,7 @@ IDEFICS2_PERCEIVER_ATTENTION_CLASSES = {
     "flash_attention_2": Idefics2PerceiverFlashAttention2,
 }
 
-
+# Perceiver Layer
 class Idefics2PerceiverLayer(nn.Module):
     def __init__(self, config, layer_idx: int):
         super().__init__()
@@ -1261,11 +1261,11 @@ class Idefics2PerceiverResampler(nn.Module):
 
     def forward(
         self,
-        context: torch.Tensor,
-        attention_mask,
+        context: torch.Tensor,      # torch.size([5,1024,4096])
+        attention_mask,             # torch.size([5,1024])
     ) -> torch.Tensor:
         # seq embed -> bsz seq embed
-        latents = self.latents.unsqueeze(0).expand((context.shape[0], *self.latents.size()))
+        latents = self.latents.unsqueeze(0).expand((context.shape[0], *self.latents.size()))                       
 
         latent_attention_mask = torch.ones(
             (attention_mask.size(0), latents.size(1)), dtype=attention_mask.dtype, device=attention_mask.device
@@ -1277,11 +1277,12 @@ class Idefics2PerceiverResampler(nn.Module):
             else attention_mask
         )
 
-        compressed_context = latents
-        for perceiver_layer in self.layers:
+        # 이전 스텝의 compresssed context가 원본 context와 함께 재귀적으로 들어감.
+        compressed_context = latents                            # torch.size([5,64,4096])
+        for perceiver_layer in self.layers:                     # len(self.layers) = 3 loop
             layer_outputs = perceiver_layer(
-                compressed_context,
-                context,
+                compressed_context,                             # torch.size([5,64,4096])
+                context,                                        # torch.size([5,1024,4096])
                 attention_mask=attention_mask,
                 position_ids=None,
                 past_key_value=None,
@@ -1289,13 +1290,13 @@ class Idefics2PerceiverResampler(nn.Module):
                 use_cache=False,
             )
 
-            compressed_context = layer_outputs[0]
+            compressed_context = layer_outputs[0]               
 
-        compressed_context = self.norm(compressed_context)
+        compressed_context = self.norm(compressed_context)      # torch.size([5,64,4096])
 
-        return compressed_context
+        return compressed_context                               # torch.size([5,64,4096])
 
-
+# Modality Projection + Perceiver Resampler
 class Idefics2Connector(nn.Module):
     def __init__(self, config):
         super().__init__()
@@ -1307,10 +1308,10 @@ class Idefics2Connector(nn.Module):
         )
         self.perceiver_resampler = Idefics2PerceiverResampler(config)
 
-    def forward(self, image_hidden_states, attention_mask):
-        image_hidden_states = self.modality_projection(image_hidden_states)
-        image_hidden_states = self.perceiver_resampler(context=image_hidden_states, attention_mask=attention_mask)
-        return image_hidden_states
+    def forward(self, image_hidden_states, attention_mask):                                                         # torch.size([5,1024,1152])
+        image_hidden_states = self.modality_projection(image_hidden_states)                                         # torch.size([5,1024,4096])
+        image_hidden_states = self.perceiver_resampler(context=image_hidden_states, attention_mask=attention_mask)  # torch.size([5,64,4096])
+        return image_hidden_states                                                                                  # torch.size([5,64,4096])
 
 
 IDEFICS2_START_DOCSTRING = r"""
@@ -1464,15 +1465,16 @@ IDEFICS2_INPUTS_DOCSTRING = r"""
 class Idefics2Model(Idefics2PreTrainedModel):
     def __init__(self, config: Idefics2Config):
         super().__init__(config)
-        self.padding_idx = self.config.text_config.pad_token_id
-        self.vocab_size = self.config.text_config.vocab_size
+        self.padding_idx = self.config.text_config.pad_token_id                     # 0
+        self.vocab_size = self.config.text_config.vocab_size                        # 32003
 
-        self.vision_model = Idefics2VisionTransformer(config.vision_config)
-        self.connector = Idefics2Connector(config)
-        self.text_model = AutoModel.from_config(config.text_config, attn_implementation=config._attn_implementation)
+        # SigLip500M -> Modality Projection & Perceiver Resampler -> Mistral-7B 
+        self.vision_model = Idefics2VisionTransformer(config.vision_config)         # SigLip500M
+        self.connector = Idefics2Connector(config)                                  # MLP + Perceiver Resampler
+        self.text_model = AutoModel.from_config(config.text_config, attn_implementation=config._attn_implementation)    # Mistral-7B
 
-        self.image_seq_len = config.perceiver_config.resampler_n_latents
-        self.image_token_id = self.config.image_token_id
+        self.image_seq_len = config.perceiver_config.resampler_n_latents            # 64
+        self.image_token_id = self.config.image_token_id                            # 32001
 
         self._use_flash_attention_2 = config._attn_implementation == "flash_attention_2"
 
@@ -1567,6 +1569,7 @@ class Idefics2Model(Idefics2PreTrainedModel):
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
     ) -> Union[Tuple, Idefics2BaseModelOutputWithPast]:
+        
         output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
         output_hidden_states = (
             output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
@@ -1599,14 +1602,15 @@ class Idefics2Model(Idefics2PreTrainedModel):
         if inputs_embeds is not None and input_ids is None and past_seen_tokens == 0:
             raise ValueError("When first calling the model, if input_embeds are passed, input_ids should not be None.")
 
+        # 텍스트 ID는 Mistral-7B에 들어가기 위해 embedding space로 투영.
         if inputs_embeds is None:
-            inputs_embeds = self.text_model.get_input_embeddings()(input_ids)
+            inputs_embeds = self.text_model.get_input_embeddings()(input_ids)                       # (1, 623, 4096)
 
         # START VISUAL INPUTS INTEGRATION
         if pixel_values is not None and image_hidden_states is not None:
             raise ValueError("You cannot specify both pixel_values and image_hidden_states at the same time")
         elif pixel_values is not None:
-            batch_size, num_images, num_channels, height, width = pixel_values.shape
+            batch_size, num_images, num_channels, height, width = pixel_values.shape                # (1,5,3,448,448)
             pixel_values = pixel_values.to(dtype=self.dtype)  # fp16 compatibility
             pixel_values = pixel_values.view(batch_size * num_images, *pixel_values.shape[2:])
 
@@ -1634,31 +1638,36 @@ class Idefics2Model(Idefics2PreTrainedModel):
             patches_subgrid = patches_subgrid.unfold(dimension=2, size=patch_size, step=patch_size)
             patch_attention_mask = (patches_subgrid.sum(dim=(-1, -2)) > 0).bool()
 
-            # Get sequence from the vision encoder
-            image_hidden_states = self.vision_model(
-                pixel_values=pixel_values,
-                patch_attention_mask=patch_attention_mask,
+            # Get sequence from the vision encoder ======================= SigLip
+            image_hidden_states = self.vision_model(        # torch.size([5,1024,1152])
+                pixel_values=pixel_values,                  # torch.size([5,3,448,448])
+                patch_attention_mask=patch_attention_mask,  # torch.size([5,32,32])
             ).last_hidden_state
 
-            # Modality projection & resampling
-            image_hidden_states = self.connector(
-                image_hidden_states, attention_mask=patch_attention_mask.view(pixel_values.size(0), -1)
+            # Modality projection & resampling =========================== Perciever
+            image_hidden_states = self.connector(                                                       # torch.size([5,64,4096])
+                image_hidden_states, attention_mask=patch_attention_mask.view(pixel_values.size(0), -1) # torch.size([5,1024,1152]), torch.size([5,1024])
             )
 
         elif image_hidden_states is not None:
             image_hidden_states = image_hidden_states.to(dtype=self.dtype, device=input_ids.device)
 
+        # Dynamic Patch Retrieval ===========================================
+        # image_hidden_states = self.DPR(input_ids, inputs_embeds, image_hidden_states)
+        
         if past_seen_tokens == 0 and inputs_embeds is not None and image_hidden_states is not None:
             # When we generate, we don't want to replace the potential image_token_id that we generated by images
             # that simply don't exist
-            inputs_embeds = self.inputs_merger(
-                input_ids=input_ids,
-                inputs_embeds=inputs_embeds,
-                image_hidden_states=image_hidden_states,
+            # Token Concatenation: 이미지 토큰 자리에 이미지 히든 스테이트를 매핑하고 LLM에 들어갈 토큰 임베딩을 정비하는 구간.
+            inputs_embeds = self.inputs_merger(             # torch.size([1,623,4096])
+                input_ids=input_ids,                        # Text input ids: torch.size([1,623]) 가운데가 이미지 토큰으로 가득 차 있음.
+                inputs_embeds=inputs_embeds,                # Text input embedding: torch.size([1,623,4096]) Mistral-7B를 통해 변환한 텍스트 임베딩
+                image_hidden_states=image_hidden_states,    # Image hiddent states: torch.size([5,64,4096]) SigLiP -> MLP + Perceiver를 거친 이미지 임베딩
             )
 
-        outputs = self.text_model(
-            inputs_embeds=inputs_embeds,
+        # LLM ============================================================= Mistral-7B
+        outputs = self.text_model(                          # torch.size([1,623,4096])
+            inputs_embeds=inputs_embeds,                    # torch.size([1,623,4096])
             attention_mask=attention_mask,
             position_ids=position_ids,
             past_key_values=past_key_values,
@@ -1821,11 +1830,12 @@ class Idefics2ForConditionalGeneration(Idefics2PreTrainedModel):
         ['In this image, we can see the city of New York, and more specifically the Statue of Liberty. In this image, we can see the city of New York, and more specifically the Statue of Liberty.\n\n', 'In which city is that bridge located?\n\nThe bridge is located in the city of Pittsburgh, Pennsylvania.\n\n\nThe bridge is']
         ```"""
 
-        output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
+        # Argument Definition: output_attentions, output_hidden_states, return_dict
+        output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions   # False
         output_hidden_states = (
-            output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
+            output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states          # False
         )
-        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+        return_dict = return_dict if return_dict is not None else self.config.use_return_dict                       # True
 
         # decoder outputs consists of (dec_features, layer_state, dec_hidden, dec_attn)
         outputs = self.model(
@@ -1864,26 +1874,26 @@ class Idefics2ForConditionalGeneration(Idefics2PreTrainedModel):
             loss_fct = CrossEntropyLoss()
             sentence_loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
             
-            # 옵션 손실 함수 개발 부분.
-            option_gt_id = int(shift_labels.view(-1)[-3])
-            if option_gt_id in self.option_ground_dict:
-                pass
-            else:
-                option_gt_id = int(shift_labels.view(-1)[-2])
-                if option_gt_id in self.option_ground_dict:
-                    pass
-                else:
-                    option_gt_id=None
+            # # 옵션 손실 함수 개발 부분.
+            # option_gt_id = int(shift_labels.view(-1)[-3])
+            # if option_gt_id in self.option_ground_dict:
+            #     pass
+            # else:
+            #     option_gt_id = int(shift_labels.view(-1)[-2])
+            #     if option_gt_id in self.option_ground_dict:
+            #         pass
+            #     else:
+            #         option_gt_id=None
             
-            if option_gt_id:                
-                option_pred, option_gt = shift_logits.view(-1, shift_logits.size(-1))[-3][self.option_id], torch.tensor(self.option_ground_dict[option_gt_id]).to(sentence_loss.device)
-                option_pred_sfm = self.option_softmax(option_pred)
-                option_loss = loss_fct(option_pred_sfm, option_gt)
-                loss = (sentence_loss + option_loss)
-            else:
-                loss = sentence_loss
+            # if option_gt_id:                
+            #     option_pred, option_gt = shift_logits.view(-1, shift_logits.size(-1))[-3][self.option_id], torch.tensor(self.option_ground_dict[option_gt_id]).to(sentence_loss.device)
+            #     option_pred_sfm = self.option_softmax(option_pred)
+            #     option_loss = loss_fct(option_pred_sfm, option_gt)
+            #     loss = (sentence_loss + option_loss)
+            # else:
+            #     loss = sentence_loss
             
-            # loss = sentence_loss
+            loss = sentence_loss
             
             # shift_labels[:-5] = -100
             # print(option_pred)
@@ -1989,3 +1999,28 @@ class Idefics2ForConditionalGeneration(Idefics2PreTrainedModel):
                 tuple(past_state.index_select(0, beam_idx.to(past_state.device)) for past_state in layer_past),
             )
         return reordered_past
+
+class DPRCrossAttention(nn.Module):
+    def __init__(self, n_split=9, input_dim=4096, k=6):
+        super().__init__()
+        self.n_spllit = n_split
+        self.input_dim = input_dim
+        self.query = nn.Linear(input_dim, input_dim) # [batch_size, seq_length, input_dim]
+        self.key = nn.Linear(input_dim, input_dim) # [batch_size, seq_length, input_dim]
+        self.value = nn.Linear(input_dim, input_dim)
+        self.softmax == nn.Softmax(dim=2)
+   
+    def forward(self, id, src, tgt): # x.shape (batch_size, seq_length, input_dim)
+        tgt = tgt.view(-1, self.n_split*64, self.input_dim)
+        queries = self.query(src)
+        keys = self.key(tgt)
+        values = self.value(tgt)
+
+        score = torch.bmm(queries, keys.transpose(1, 2))/(self.input_dim**0.5)
+        attention = self.softmax(score)         # (64*n_split, 623)
+        # attention_per_patch = self.calc_att_per_patch(attention, self.n_split)
+        # topk_patch = self.get_topk_patch_idx(attention_per_patch, self.k)
+        weighted = torch.bmm(attention, values) # (64*n_split, input_dim)
+        weighted = weighted.view(-1, 64, self.input_dim)
+        # weighted = weighted[topk_patch]
+        return weighted

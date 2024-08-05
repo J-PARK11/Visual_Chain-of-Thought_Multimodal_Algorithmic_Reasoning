@@ -12,6 +12,7 @@ def get_model(mode, data_args, model_args, training_args):
         processor = Idefics2Processor.from_pretrained(model_args.pretrained_model_path,
                                                   do_image_splitting = model_args.do_image_splitting,
                                                   size= {"longest_edge": 448, "shortest_edge": 378})
+                                                  # size= {"longest_edge": 224, "shortest_edge": 190}   
         
         if 'train' in mode:
             if model_args.USE_LORA :

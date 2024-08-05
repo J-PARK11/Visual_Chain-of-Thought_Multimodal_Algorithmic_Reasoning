@@ -74,14 +74,23 @@ class V_COT_SMART101_Dataset(Dataset):
         if args.task == 'GPT_paraphrasing':
             self.GPT_paraphrasing_dict_path = args.GPT_paraphrasing_dict_path
             with open(self.GPT_paraphrasing_dict_path,'r') as f:
-                self.GPT_paraphrasing_dict = json.load(f)
-            
+                self.GPT_paraphrasing_dict = json.load(f)        
+          
         # GPT Augmentation Train
         if args.task == 'GPT_augmentation_train':
+            
+            self.level2_puzzle_list = ['2','19','23','28','44','46','50','56','89']
+            self.level3_puzzle_list = ['13','16','17','24','39','40','43','51','54','58','80','93']
+            if args.gpt_data_include_level == 2:
+                puzzle_ids = sorted(list(set(puzzle_ids) - set(self.level3_puzzle_list)))
+            elif args.gpt_data_include_level == 1:
+                puzzle_ids = sorted(list(set(puzzle_ids) - set(self.level2_puzzle_list)))
+                puzzle_ids = sorted(list(set(puzzle_ids) - set(self.level3_puzzle_list)))
+            
             self.GPT_augmentation_dict_path = args.GPT_augmentation_dict_path
             with open(self.GPT_augmentation_dict_path,'r') as f:
                 self.GPT_augmentation_dict = json.load(f)
-                augment_puzzle_name = list(self.GPT_augmentation_dict.keys())
+                # augment_puzzle_name = list(self.GPT_augmentation_dict.keys())
         
         # 인스턴스 퍼즐 불러오기.
         for puzzle_id in puzzle_ids:
@@ -98,14 +107,17 @@ class V_COT_SMART101_Dataset(Dataset):
                 for parapharsing_loop in range(4):
                     qa_info[parapharsing_loop]['train_seq'] = parapharsing_loop
             elif self.mode == 'train' and args.task == 'GPT_augmentation_train':
-                matched_info = []
-                for search_info in qa_info:
-                    if search_info['image'] in augment_puzzle_name:
-                        matched_info += [search_info]
-                qa_info = matched_info
+                qa_info = qa_info[1:1001]
+                # matched_info = []
+                # for search_info in qa_info:
+                #     if search_info['image'] in augment_puzzle_name:
+                #         matched_info += [search_info]
+                # qa_info = matched_info
             elif args.task == 'GPT_augmentation_generation':
                 self.GT_with_rationale_key_list[puzzle_id] = qa_info[0]['image']
-                qa_info = qa_info[: self.num_tot]
+                qa_info = qa_info[1: 1+self.num_tot]
+            elif self.mode == 'test':
+                qa_info = qa_info[1700:1700+self.num_tot]
             else:
                 qa_info = qa_info[: self.num_tot]
                 
@@ -152,9 +164,9 @@ class V_COT_SMART101_Dataset(Dataset):
             Answer_Option_phrase += f'\n{op}. {op_val}'
             opts.append(op_val)
         q_stn = info["Question"]
-        q_stn = q_stn + Answer_Option_phrase + '\nPlease answer with the alphabet in the options'
+        q_stn_out = q_stn + Answer_Option_phrase + '\nPlease answer with the alphabet in the options.'
         
-        option_answer= info['Answer']
+        option_answer= f'Answer: {info["Answer"]}' # info['Answer']
         
         if self.task=='GT_with_rationale' and self.mode == 'train':
             option_answer = self.GT_with_rationale[im_name]['GT_with_Rationale']
@@ -162,7 +174,12 @@ class V_COT_SMART101_Dataset(Dataset):
             ref_puzzle_name = self.GT_with_rationale_key_list[pid]
             option_answer = self.GT_with_rationale[ref_puzzle_name]['GT_with_Rationale']  
         elif self.task=='GPT_augmentation_train' and self.mode == 'train':
-            option_answer = self.GPT_augmentation_dict[im_name]['GT_with_Rationale']  
+            rationale = self.GPT_augmentation_dict[im_name]['GT_with_Rationale']
+            if len(rationale) < 1000:
+                option_answer = rationale
+                q_stn_out = q_stn + Answer_Option_phrase + '\nPlease answer with the alphabet in the options and explain how you solved it.'
+            else:
+                pass
         elif self.task =='GPT_paraphrasing' and self.mode == 'train':
             if info['train_seq'] == 0:
                 option_answer = self.GPT_paraphrasing_dict[im_name]['GT_with_Rationale']
@@ -175,7 +192,7 @@ class V_COT_SMART101_Dataset(Dataset):
             else:
                 raise
         
-        return im, im_path, torch.tensor(int(pid)), q_stn, opts, option_answer, torch.tensor(lbl), torch.tensor(answer)
+        return im, im_path, torch.tensor(int(pid)), q_stn_out, opts, option_answer, torch.tensor(lbl), torch.tensor(answer)
 
     def __len__(self):
         return len(self.qa_info)
