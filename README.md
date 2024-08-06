@@ -16,6 +16,11 @@ git clone git@github.com:J-PARK11/Visual_Chain-of-Thought_Multimodal_Algorithmic
 pip install -r requirements.txt
 ```
 
+## 📔 핵심 요약
+- 현재 제일 많이 쓰는 스크립트는 script/train/gpt_aug_101000_DPR_train.sh와 script/eval/generation.sh 이다.
+- 인자는 대부분 hf_config에 있는 arguement로 조절할 수 있고, 중요한 모듈은 build_dataset.py, V_COT_data_loader.py, build_model.py, modeling_idefics2.py 이다.
+- 특정 버전을 돌리기 위해선 그에 상응하는 Json 파일이 필요하다. 이 부분은 Json 용량이 너무 커서 문의해주시면 개인적으로 보내드리겠습니다.
+
 ## 🎮 Quick Start
 - 스크립트는 크게 *Train*, *Evaluation*, *Data Generation* 세션으로 구성되어 있음.
 - 각 스크립트의 주된 내용은 "hf_config.py"에 있는 DataArguments.task에 따라 결정되는데 크게 {'custom', 'supervised', 'zero_shot', 'GT_with_rationale', 'GPT_augmentation_generation', 'GPT_augmentation_train'}으로 구성된다.
