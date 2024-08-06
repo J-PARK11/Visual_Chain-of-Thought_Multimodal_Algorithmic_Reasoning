@@ -16,6 +16,7 @@
 Processor class for IDEFICS2.
 """
 
+import torch
 from typing import TYPE_CHECKING, List, Optional, Union
 
 from transformers.feature_extraction_utils import BatchFeature
@@ -64,7 +65,8 @@ class Idefics2Processor(ProcessorMixin):
     image_processor_class = "Idefics2ImageProcessor"
     tokenizer_class = "AutoTokenizer"
 
-    def __init__(self, image_processor, tokenizer=None, image_seq_len: int = 64, chat_template: str = None, **kwargs):
+    def __init__(self, image_processor, tokenizer=None, image_seq_len: int = 64, chat_template: str = None, use_DPR=False, **kwargs):
+        self.use_DPR = use_DPR
         if image_processor is None:
             raise ValueError("You need to specify an `image_processor`.")
         if tokenizer is None:
@@ -182,8 +184,11 @@ class Idefics2Processor(ProcessorMixin):
             image_str = f"{fake_image_token}{image_token * image_seq_len}{fake_image_token}"
 
             if self.image_processor.do_image_splitting:
-                # A single image token is split into 4 patches + 1 original image
-                image_str = image_str * 5
+                if self.use_DPR:
+                    image_str = image_str * 9
+                else:
+                    # A single image token is split into 4 patches + 1 original image
+                    image_str = image_str * 5
 
             prompt_strings = []
             for sample in text:
@@ -228,7 +233,34 @@ class Idefics2Processor(ProcessorMixin):
             images = [[load_image(im) for im in sample] for sample in images]
             image_inputs = self.image_processor(images, return_tensors=return_tensors)
             inputs.update(image_inputs)
-
+        
+        if self.use_DPR:
+            dpr_input_ids, dpr_attention_mask = [], []
+            for batch_idx in range(len(inputs['input_ids'])):
+                start_idx = int((inputs['input_ids'][batch_idx] == 32000).nonzero()[0])
+                end_idx = int((inputs['input_ids'][batch_idx] == 32000).nonzero()[-1])+1        
+                
+                start_id = inputs['input_ids'][batch_idx][:start_idx]
+                end_id = inputs['input_ids'][batch_idx][end_idx:]
+                start_len, end_len = len(start_id), len(end_id)
+                text_len = (start_len + end_len)
+                
+                middle_id = torch.tensor([32001]*text_len)
+                new_input_ids = torch.cat([start_id, middle_id, end_id])
+                dpr_input_ids.append(new_input_ids)
+                
+                start_mask = inputs['attention_mask'][batch_idx][:start_idx]
+                end_mask = inputs['attention_mask'][batch_idx][end_idx:]
+                middle_mask = torch.tensor([1]*text_len)
+                new_attention_mask = torch.cat([start_mask, middle_mask, end_mask])
+                dpr_attention_mask.append(new_attention_mask)
+            
+            dpr_input_ids = torch.stack(dpr_input_ids, dim=0)
+            dpr_attention_mask = torch.stack(dpr_attention_mask, dim=0)
+            
+            inputs['input_ids'] = dpr_input_ids
+            inputs['attention_mask'] = dpr_attention_mask
+            
         return inputs
 
     def batch_decode(self, *args, **kwargs):

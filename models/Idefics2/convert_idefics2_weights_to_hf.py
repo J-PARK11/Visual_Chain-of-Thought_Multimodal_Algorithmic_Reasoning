@@ -23,11 +23,15 @@ from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
     Idefics2Config,
-    Idefics2ForConditionalGeneration,
-    Idefics2ImageProcessor,
-    Idefics2Processor,
+    # Idefics2ForConditionalGeneration,
+    # Idefics2ImageProcessor,
+    # Idefics2Processor,
     MistralConfig,
 )
+
+from processing_idefics2 import Idefics2Processor
+from image_processing_idefics2 import Idefics2ImageProcessor
+from modeling_idefics2 import Idefics2ForConditionalGeneration
 
 
 EPILOG_TXT = """Example:

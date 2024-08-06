@@ -161,8 +161,8 @@ def V_COT(args, dataloader):
                                          'Only_answer':exp1_pred[iter],
                                         #  'Answer_with_Reasoning':exp2_pred[iter],
                                         #  'Image_Caption':exp6_pred[iter],
-                                         'GT_option': ao[iter],
-                                         'GT_value': o[iter][option_dict[ao[iter]]],
+                                         'GT_option': ao[iter][-1],
+                                         'GT_value': o[iter][option_dict[ao[iter][-1]]],
                                          'Hit': hit}
                 
                 # print('\n', img_name, exp2_pred[iter])

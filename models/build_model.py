@@ -4,16 +4,27 @@ from peft import LoraConfig
 
 from transformers import BitsAndBytesConfig
 from .Idefics2.processing_idefics2 import Idefics2Processor
-from .Idefics2.modeling_idefics2 import Idefics2ForConditionalGeneration
+from .Idefics2.image_processing_idefics2 import Idefics2ImageProcessor
 
 def get_model(mode, data_args, model_args, training_args):
 
     if model_args.model_type == "Idefics2-8b":
         processor = Idefics2Processor.from_pretrained(model_args.pretrained_model_path,
                                                   do_image_splitting = model_args.do_image_splitting,
-                                                  size= {"longest_edge": 448, "shortest_edge": 378})
-                                                  # size= {"longest_edge": 224, "shortest_edge": 190}   
+                                                  size= {"longest_edge": 448, "shortest_edge": 378},
+                                                  use_DPR=data_args.USE_DPR)
+        # 특별한 Image Processor가 필요함.
+        if data_args.USE_DPR:
+            from .Idefics2.modeling_DPR_idefics2 import Idefics2ForConditionalGeneration
+            dpr_image_processor = Idefics2ImageProcessor(do_image_splitting=model_args.do_image_splitting,
+                                            image_mean=[0.5,0.5,0.5], image_std=[0.5,0.5,0.5],
+                                            size={"longest_edge":224, "shortest_edge":190}, # 336, 280
+                                            use_DPR=True)
+            processor.image_processor = dpr_image_processor
         
+        else:
+            from .Idefics2.modeling_idefics2 import Idefics2ForConditionalGeneration
+                                                        
         if 'train' in mode:
             if model_args.USE_LORA :
                 lora_config = LoraConfig(

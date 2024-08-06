@@ -81,6 +81,7 @@ class V_COT_SMART101_Dataset(Dataset):
             
             self.level2_puzzle_list = ['2','19','23','28','44','46','50','56','89']
             self.level3_puzzle_list = ['13','16','17','24','39','40','43','51','54','58','80','93']
+            
             if args.gpt_data_include_level == 2:
                 puzzle_ids = sorted(list(set(puzzle_ids) - set(self.level3_puzzle_list)))
             elif args.gpt_data_include_level == 1:

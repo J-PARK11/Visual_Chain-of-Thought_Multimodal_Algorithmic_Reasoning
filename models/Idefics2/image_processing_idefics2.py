@@ -231,6 +231,7 @@ class Idefics2ImageProcessor(BaseImageProcessor):
         image_std: Optional[Union[float, List[float]]] = None,
         do_pad: bool = True,
         do_image_splitting: bool = False,
+        use_DPR: bool = False,
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
@@ -245,6 +246,7 @@ class Idefics2ImageProcessor(BaseImageProcessor):
         self.image_std = image_std if image_std is not None else IMAGENET_STANDARD_STD
         self.do_pad = do_pad
         self.do_image_splitting = do_image_splitting
+        self.use_DPR = use_DPR
 
     def resize(
         self,
@@ -412,15 +414,33 @@ class Idefics2ImageProcessor(BaseImageProcessor):
         """
         height, width = get_image_size(image, input_data_format)
 
-        mid_width = width // 2
-        mid_height = height // 2
-        return [
-            self._crop(image, 0, 0, mid_width, mid_height, input_data_format),
-            self._crop(image, mid_width, 0, width, mid_height, input_data_format),
-            self._crop(image, 0, mid_height, mid_width, height, input_data_format),
-            self._crop(image, mid_width, mid_height, width, height, input_data_format),
-            image,
-        ]
+        if self.use_DPR:
+            div1_width, div2_width = width // 3, 2 * width // 3
+            div1_height, div2_height = height // 3, 2 * height // 3
+            return [
+                self._crop(image, 0, 0, div1_width, div1_height, input_data_format),
+                self._crop(image, div1_width, 0, div2_width, div1_height, input_data_format),
+                self._crop(image, div2_width, 0, width, div1_height, input_data_format),
+                
+                self._crop(image, 0, div1_height, div1_width, div2_height, input_data_format),
+                self._crop(image, div1_width, div1_height, div2_width, div2_height, input_data_format),
+                self._crop(image, div2_width, div1_height, width, div2_height, input_data_format),
+                
+                self._crop(image, 0, div2_height, div1_width, height, input_data_format),
+                self._crop(image, div1_width, div2_height, div2_width, height, input_data_format),
+                self._crop(image, div2_width, div2_height, width, height, input_data_format),
+            ]
+            
+        else:
+            mid_width = width // 2
+            mid_height = height // 2
+            return [
+                self._crop(image, 0, 0, mid_width, mid_height, input_data_format),
+                self._crop(image, mid_width, 0, width, mid_height, input_data_format),
+                self._crop(image, 0, mid_height, mid_width, height, input_data_format),
+                self._crop(image, mid_width, mid_height, width, height, input_data_format),
+                image,
+            ]
         
         """
         div1_width, div2_width = width // 3, 2 * width // 3
