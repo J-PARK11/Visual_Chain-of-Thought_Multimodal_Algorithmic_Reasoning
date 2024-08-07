@@ -1,8 +1,8 @@
 # DDP run script
-export CUDA_VISIBLE_DEVICES=0,1,2,3
-torchrun --nproc_per_node 4 train.py \
-    --run_name phase2_DPR_CA \
-    --output_dir ./checkpoints/phase2_DPR_CA/ \
+export CUDA_VISIBLE_DEVICES=0,1,2
+torchrun --nproc_per_node 3 train.py \
+    --run_name GPT_aug_level2_DPR_1000tot \
+    --output_dir ./checkpoints/GPT_aug_level2_DPR_1000tot/ \
     --task GPT_augmentation_train \
     --train_tot 1000 \
     --eval_tot 3 \

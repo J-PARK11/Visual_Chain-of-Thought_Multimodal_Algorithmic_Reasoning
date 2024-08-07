@@ -22,15 +22,12 @@ import lib.V_COT_globvars as gv
 import datasets_lib.V_COT_data_loader as dl
 
 def V_COT(args, dataloader):
-    print("\n========== Visual Chain of Thought Single Turn Generation ==========\n")
+    print("\n========== Visual Chain of Thought Multi Turn Generation ==========\n")
     
     # V_COT 결과 저장할 JSON 파일 세팅 ========================================== #
     global result_json_path
+    global inter_reason_q_dict
     result_json_path = os.path.join(args.save_root, args.output_name)
-    puzzle_list = args.test_puzzle_list.split(',')
-    for pids in puzzle_list:
-        puzzle_save_root = os.path.join(args.save_root, 'puzzle', pids)
-        if not os.path.exists(puzzle_save_root): os.makedirs(puzzle_save_root)
     print(f'Result Json path: {result_json_path}')
             
     global result_json
@@ -60,7 +57,7 @@ def V_COT(args, dataloader):
             dpr_image_processor = Idefics2ImageProcessor(do_image_splitting=True,
                                             image_mean=[0.5,0.5,0.5], image_std=[0.5,0.5,0.5],
                                             size={"longest_edge":224, "shortest_edge":190}, # 336, 280
-                                            use_DPR=True)
+                                            use_DPR=args.USE_DPR)
             processor.image_processor = dpr_image_processor
         else:
             from models.Idefics2.modeling_idefics2 import Idefics2ForConditionalGeneration
@@ -76,6 +73,11 @@ def V_COT(args, dataloader):
 
     # V_COT 실행 ============================================================= #
     def Execute(epoch, args, target_dataloader):
+        
+        with open(args.inter_reason_q_path,'r') as f:
+            inter_reason_q_dict = json.load(f)
+            print(f'Inter Mediate Question: {len(inter_reason_q_dict)}')
+        
         TP, ALL = 0, 0
         puzzle_len  = len(args.test_puzzle_list.split(','))
         print(f'Batch Size: {args.batch_size}, #puzzle: {puzzle_len}, #instance: {args.eval_tot}, #Data: {ALL}\n')
@@ -87,94 +89,53 @@ def V_COT(args, dataloader):
             Whole_start_time = time.time()   
             if args.VLM_type in ['Idefics2']:
                 
-                exp1_pred, exp2_pred, exp3_pred, exp4_pred, exp5_pred, exp6_pred = None, None, None, None, None, None
+                prompt_bundle = inter_reason_q_dict[str(int(pids))]
+                prompt_bundle = list(prompt_bundle.values())
+                num_turn = len(prompt_bundle)
+                query_bundle = get_query_format_from_prompt(prompt_bundle, num_turn)
                 
-                # Exp1: Q, I => A =================================================================== #
-                exp1_prompt = [
-                    {"role": "user",
-                    "content": [
-                        {"type": "text", "text": 'Looking at this image, solve the question. Please return only answer like this: Answer: ?'},
-                        # {"type": "text", "text": 'Looking at this image, solve the question and explain how you solved it step-by-step.'},
-                        {"type": "image"},
-                        {"type": "text", "text": f'Question: {question}'}]}
-                    for question in q_stn]
                 
-                exp1_query = processor.apply_chat_template(exp1_prompt, add_generation_prompt=True)
-                exp1_query_input = processor(text=exp1_query, images=im, return_tensors='pt').to(device)
-                with torch.no_grad():
-                    exp1_pred_id = model.generate(**exp1_query_input, max_new_tokens=600)
-                    exp1_pred = processor.batch_decode(exp1_pred_id, skip_special_tokens=True)
-                
-                for j in range(len(exp1_pred)):
-                    exp1_pred[j] = exp1_pred[j].split('Assistant: ')[-1]
+                prev_turn_answer = []
+                for q_i, query in enumerate(query_bundle):
                     
-                # Exp1: Q, I => A ==========================nerate(**exp2_query_input, max_new_tokens=500)
-                #     exp2_pred = processor.batch_decode(exp2_pred_id, skip_special_tokens=True)
+                    # Multi-turn Query Transfer
+                    for q_t in range(q_i):
+                        update_idx = 2*(q_t+1)-1
+                        query[update_idx]['content'][0]['text'] = prev_turn_answer[q_t]
+                        
+                    processed_query = processor.apply_chat_template(query, add_generation_prompt=True)
+                    processed_input = processor(text=processed_query, images=im, return_tensors="pt").to(device)
+                    with torch.no_grad():    
+                        pred_id = model.generate(**processed_input, max_new_tokens=600)
+                        pred = processor.batch_decode(pred_id, skip_special_tokens=True)
+                        answer = pred[0].split('\nAssistant: ')[-1].strip().replace('\n\n', '\n').replace('\\', '').replace('   ', ' ')
+                        prev_turn_answer.append(answer)
+                        
+                query.append({'role':'assistant', 'Answer':f'{answer}'})                        
                 
-                # for j in range(len(exp2_pred)):
-                #     exp2_pred[j] = exp2_pred[j].split('Assistant: ')[-1]
-                    
-                # # Exp6: Q, I, GT Answer sheet => A ================================================== #
-                # exp6_prompt = [
-                #     {"role": "user",
-                #     "content": [
-                #         {"type": "text", "text": 'Explain the contents of image.'},
-                #         {"type": "image"}]}
-                #     for question in q_stn]
-                
-                # exp6_query = processor.apply_chat_template(exp6_prompt, add_generation_prompt=True)
-                # exp6_query_input = processor(text=exp6_query, images=im, return_tensors='pt').to(device)
-                # with torch.no_grad():
-                #     exp6_pred_id = model.generate(**exp6_query_input, max_new_tokens=500)
-                #     exp6_pred = processor.batch_decode(exp6_pred_id, skip_special_tokens=True)
-                
-                # for j in range(len(exp6_pred)):
-                #     exp6_pred[j] = exp6_pred[j].split('Assistant: ')[-1]
-                
-            # Result Logging                
-            print()
-            print(exp1_pred[0])                 
-            for iter, img_path in enumerate(im_path):
-                
-                st = exp1_pred[iter].upper().find('ANSWER: ')
+                st = answer.upper().find('ANSWER: ')
                 if st<0:
                     hit = False
                 else:
                     ed = st + 9
-                    pred_answer = exp1_pred[iter][st:ed][-1]
-                    hit = (pred_answer == ao[iter][-1])
+                    pred_answer = answer[st:ed][-1]
+                    hit = (pred_answer == ao[0][-1])
                     if hit : TP+=1
                     ALL += 1
                 
                 log_dict=dict()
-                img_name = img_path.split('/')[-1]                    
-                question = q_stn[iter]
+                img_name = im_path[0].split('/')[-1]                    
+                question = q_stn[0]
                 result_json[img_name] = {'Question': question,
-                                         'Only_answer':exp1_pred[iter],
-                                        #  'Answer_with_Reasoning':exp2_pred[iter],
-                                        #  'Image_Caption':exp6_pred[iter],
-                                         'GT_option': ao[iter][-1],
-                                         'GT_value': o[iter][option_dict[ao[iter][-1]]],
+                                         'Turn1': prev_turn_answer[0],
+                                         'Turn2': prev_turn_answer[1],
+                                         'Turn3': prev_turn_answer[2],
+                                         'Turn4': prev_turn_answer[3],
+                                         'GT_option': ao[0][-1],
+                                         'GT_value': o[0][option_dict[ao[0][-1]]],
                                          'Hit': hit}
-                
-                # print('\n', img_name, exp2_pred[iter])
-                # puzzle_save_path = os.path.join(args.save_root, 'puzzle', str(int(pids)), img_name)
-                # plt.figure(figsize=(6,6))
-                # plt.suptitle(f'V-COT Reasoning: "{img_name}"')
-                # plt.imshow(im[iter][0])
-                # plt.axis('off')
-                # plt.savefig(puzzle_save_path)
-                # plt.clf()
-                
-                """
-                print(img_name)
-                print(q_stn[0])
-                print(ao[0])
-                print(o[0][option_dict[ao[iter][-1]]])
-                print(exp1_pred[0])
-                """
-
-                # ================================================================ #
+                                         
+                # ============= =================================================== #
                     
             Whole_end_time = time.time()
             Whole_dur_time = Whole_end_time - Whole_start_time
@@ -197,6 +158,30 @@ def V_COT(args, dataloader):
         
     print('\n================= Complete =================')
 
+def get_query_format_from_prompt(prompt_bundle, num_turn):
+    query_bundle = []
+    for n in range(num_turn):
+        query = []
+        for i in range(n):
+            iterative_role_sentence = {"role": "user",
+                                        "content": [
+                                                {"type": "text", "text": f"{prompt_bundle[i]}"},
+                                                ]}
+            iterative_assistant_sentence = {"role": "assistant",
+                                            "content": [
+                                                {"type": "text", "text": ''}
+                                            ]}
+            query.append(iterative_role_sentence), query.append(iterative_assistant_sentence)
+        
+        main_senetence = {"role": "user",
+                            "content": [
+                                    {"type": "image"},
+                                    {"type": "text", "text": f"{prompt_bundle[n]}"},
+                                    ]}
+        query.append(main_senetence)
+        query_bundle.append(query)
+    
+    return query_bundle
 
 def get_data_loader(args, batch_size=100, shuffle=False, num_workers=6, pin_memory=True):
     args.preprocess = None
@@ -226,6 +211,7 @@ if __name__ == "__main__":
         help="location of the csv files, and location of the images, relative location is provided in the csv file.",
     )
     parser.add_argument("--save_root", type=str, default="./V_COT_output/", help="location to save intermediate files.")
+    parser.add_argument("--inter_reason_q_path", type=str, default="./V_COT_output/GT/intermediate_reasoning_question.json")
     parser.add_argument("--load_ckpt_path", type=str, default=None)
     parser.add_argument("--output_name", type=str, default="dump.json")
     parser.add_argument("--task", type=str, default=None)
@@ -235,7 +221,6 @@ if __name__ == "__main__":
     # 내가 추가한 Argument List =================================================================== #
     parser.add_argument("--VLM_type", type=str, default='Idefics2')
     parser.add_argument("--gpu_num", type=int, default=0, help="Define GPU used")
-    parser.add_argument("--USE_DPR", type=bool, default=False)
     
     # 세팅
     args = parser.parse_args()

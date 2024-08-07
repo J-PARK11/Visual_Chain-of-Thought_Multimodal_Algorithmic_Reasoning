@@ -32,6 +32,7 @@ def train():
     
     # 모델 load...
     model, processor = get_model('train', data_args, model_args, training_args)
+    print(f'\nModel Parameter numbers: {sum(p.numel() for p in model.parameters() if p.requires_grad)}')
     
     # 데이터로더 load...
     data_module = get_dataset(training_args, model_args, data_args, processor=processor)

@@ -108,7 +108,7 @@ class V_COT_SMART101_Dataset(Dataset):
                 for parapharsing_loop in range(4):
                     qa_info[parapharsing_loop]['train_seq'] = parapharsing_loop
             elif self.mode == 'train' and args.task == 'GPT_augmentation_train':
-                qa_info = qa_info[1:1001]
+                qa_info = qa_info[:self.num_tot]
                 # matched_info = []
                 # for search_info in qa_info:
                 #     if search_info['image'] in augment_puzzle_name:
