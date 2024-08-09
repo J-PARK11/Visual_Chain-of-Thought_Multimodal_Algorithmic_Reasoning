@@ -175,6 +175,16 @@ if is_in_notebook():
     from transformers.utils.notebook import NotebookProgressCallback
 
     DEFAULT_PROGRESS_CALLBACK = NotebookProgressCallback
+    
+if is_sagemaker_mp_enabled():
+    import smdistributed.modelparallel.torch as smp
+    from smdistributed.modelparallel import __version__ as SMP_VERSION
+
+    IS_SAGEMAKER_MP_POST_1_10 = version.parse(SMP_VERSION) >= version.parse("1.10")
+
+    from .trainer_pt_utils import smp_forward_backward, smp_forward_only, smp_gather, smp_nested_concat
+else:
+    IS_SAGEMAKER_MP_POST_1_10 = False
 
 if is_datasets_available():
     import datasets
@@ -1018,21 +1028,32 @@ class Trainer:
         Trainer's init through `optimizers`, or subclass and override this method in a subclass.
         """
         opt_model = self.model_wrapped if is_sagemaker_mp_enabled() else self.model
+        scratch_modules = ["model.DPR_module_list", "model.DPR_mlp"]
+        
+        # for n, p in opt_model.named_parameters():
+        #     if (((scratch_modules[0] in n) or (scratch_modules[1] in n))):
+        #         p.requires_grad = True
 
         if self.optimizer is None:
             decay_parameters = self.get_decay_parameter_names(opt_model)
             optimizer_grouped_parameters = [
                 {
                     "params": [
-                        p for n, p in opt_model.named_parameters() if (n in decay_parameters and p.requires_grad)
+                        p for n, p in opt_model.named_parameters() if (n in decay_parameters and p.requires_grad and scratch_modules[0] not in n and scratch_modules[1] not in n)
                     ],
-                    "weight_decay": self.args.weight_decay,
+                    "weight_decay": self.args.weight_decay, "lr": 8e-6
                 },
                 {
                     "params": [
-                        p for n, p in opt_model.named_parameters() if (n not in decay_parameters and p.requires_grad)
+                        p for n, p in opt_model.named_parameters() if (n not in decay_parameters and p.requires_grad and scratch_modules[0] not in n and scratch_modules[1] not in n)
                     ],
-                    "weight_decay": 0.0,
+                    "weight_decay": 0.0, "lr": 8e-6 
+                },
+                {
+                    "params": [
+                        p for n, p in opt_model.named_parameters() if (((scratch_modules[0] in n) or (scratch_modules[1] in n)) and p.requires_grad)
+                    ],
+                    "weight_decay": 0.0, "lr": 8e-3
                 },
             ]
 
@@ -1054,6 +1075,7 @@ class Trainer:
                 optimizer_grouped_parameters = optimizer_kwargs.pop("optimizer_dict")
 
             self.optimizer = optimizer_cls(optimizer_grouped_parameters, **optimizer_kwargs)
+            print(self.optimizer)
 
             if optimizer_cls.__name__ == "Adam8bit":
                 import bitsandbytes

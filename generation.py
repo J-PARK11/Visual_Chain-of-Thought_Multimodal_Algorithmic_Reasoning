@@ -27,10 +27,10 @@ def V_COT(args, dataloader):
     # V_COT 결과 저장할 JSON 파일 세팅 ========================================== #
     global result_json_path
     result_json_path = os.path.join(args.save_root, args.output_name)
-    puzzle_list = args.test_puzzle_list.split(',')
-    for pids in puzzle_list:
-        puzzle_save_root = os.path.join(args.save_root, 'puzzle', pids)
-        if not os.path.exists(puzzle_save_root): os.makedirs(puzzle_save_root)
+    # puzzle_list = args.test_puzzle_list.split(',')
+    # for pids in puzzle_list:
+    #     puzzle_save_root = os.path.join(args.save_root, 'puzzle', pids)
+    #     if not os.path.exists(puzzle_save_root): os.makedirs(puzzle_save_root)
     print(f'Result Json path: {result_json_path}')
             
     global result_json
@@ -56,10 +56,10 @@ def V_COT(args, dataloader):
                                                   use_DPR=args.USE_DPR)
         # 특별한 Image Processor가 필요함.
         if args.USE_DPR:
-            from models.Idefics2.modeling_DPR_idefics2 import Idefics2ForConditionalGeneration
+            from models.Idefics2.modeling_DPR_idefics2_qkv_inverse import Idefics2ForConditionalGeneration
             dpr_image_processor = Idefics2ImageProcessor(do_image_splitting=True,
                                             image_mean=[0.5,0.5,0.5], image_std=[0.5,0.5,0.5],
-                                            size={"longest_edge":224, "shortest_edge":190}, # 336, 280
+                                            size={"longest_edge":336, "shortest_edge":280}, # 336, 280
                                             use_DPR=True)
             processor.image_processor = dpr_image_processor
         else:
@@ -93,8 +93,10 @@ def V_COT(args, dataloader):
                 exp1_prompt = [
                     {"role": "user",
                     "content": [
-                        {"type": "text", "text": 'Looking at this image, solve the question. Please return only answer like this: Answer: ?'},
+                        # {"type": "text", "text": 'Looking at this image, solve the question. Please return only answer like this: Answer: ?'},
                         # {"type": "text", "text": 'Looking at this image, solve the question and explain how you solved it step-by-step.'},
+                        # {"type": "text", "text": 'Looking at this image, solve the answer along with the solution process.'},
+                        {"type": "text", "text": 'Solve the problem and answer it with the alphabet in the option. And explain how you solved it.'},
                         {"type": "image"},
                         {"type": "text", "text": f'Question: {question}'}]}
                     for question in q_stn]
@@ -131,9 +133,7 @@ def V_COT(args, dataloader):
                 # for j in range(len(exp6_pred)):
                 #     exp6_pred[j] = exp6_pred[j].split('Assistant: ')[-1]
                 
-            # Result Logging                
-            print()
-            print(exp1_pred[0])                 
+            # Result Logging                                
             for iter, img_path in enumerate(im_path):
                 
                 st = exp1_pred[iter].upper().find('ANSWER: ')

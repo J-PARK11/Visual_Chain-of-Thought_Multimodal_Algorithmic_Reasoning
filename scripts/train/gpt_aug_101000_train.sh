@@ -4,9 +4,9 @@ torchrun --nproc_per_node 4 train.py \
     --run_name GPT_aug_level1_100tot \
     --output_dir ./checkpoints/GPT_aug_level1_100tot/ \
     --task GPT_augmentation_train \
-    --train_tot 100 \
+    --train_tot 1000 \
     --eval_tot 3 \
-    --num_train_epochs 2 \
+    --num_train_epochs 1 \
     --per_device_train_batch_size 1 \
     --per_device_eval_batch_size 1 \
     --gradient_accumulation_steps 2 \

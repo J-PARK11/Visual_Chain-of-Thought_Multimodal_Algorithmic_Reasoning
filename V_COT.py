@@ -16,7 +16,9 @@ from torch.utils.data.distributed import DistributedSampler
 warnings.filterwarnings("ignore")
 os.environ["TOKENIZERS_PARALLELISM"] = "1"
 global option_dict
+global need_q_pid
 option_dict = {'A':0, 'B':1, 'C':2, 'D':3, 'E':4}
+need_q_pid = ['1', '2', '6', '7', '9', '11', '12', '14', '20', '21', '22', '25', '26', '27', '29', '30', '31', '32', '35', '36', '38', '39', '43', '44', '46', '47', '48', '49', '50', '52', '53', '54', '55', '57', '59', '60', '62', '63', '64', '65', '66', '67', '68', '69', '70', '71', '72', '73', '74', '75', '76', '81', '84', '86', '87', '88', '89', '90', '91', '92', '93', '96', '98', '100', '101']
 
 import lib.V_COT_globvars as gv
 import datasets_lib.V_COT_data_loader as dl
@@ -56,7 +58,7 @@ def V_COT(args, dataloader):
             from models.Idefics2.modeling_DPR_idefics2 import Idefics2ForConditionalGeneration
             dpr_image_processor = Idefics2ImageProcessor(do_image_splitting=True,
                                             image_mean=[0.5,0.5,0.5], image_std=[0.5,0.5,0.5],
-                                            size={"longest_edge":224, "shortest_edge":190}, # 336, 280
+                                            size={"longest_edge":224, "shortest_edge":190}, # 336, 280 / 224, 190
                                             use_DPR=args.USE_DPR)
             processor.image_processor = dpr_image_processor
         else:
@@ -89,12 +91,16 @@ def V_COT(args, dataloader):
             Whole_start_time = time.time()   
             if args.VLM_type in ['Idefics2']:
                 
-                prompt_bundle = inter_reason_q_dict[str(int(pids))]
+                pid = str(int(pids))
+                
+                # if pid in need_q_pid: continue
+                
+                prompt_bundle = inter_reason_q_dict[pid]
                 prompt_bundle = list(prompt_bundle.values())
                 num_turn = len(prompt_bundle)
-                query_bundle = get_query_format_from_prompt(prompt_bundle, num_turn)
-                
-                
+                need_q_in_first = (pid in need_q_pid)
+                query_bundle = get_query_format_from_prompt(prompt_bundle, num_turn, q_stn, need_q_in_first)
+                                
                 prev_turn_answer = []
                 for q_i, query in enumerate(query_bundle):
                     
@@ -158,8 +164,12 @@ def V_COT(args, dataloader):
         
     print('\n================= Complete =================')
 
-def get_query_format_from_prompt(prompt_bundle, num_turn):
+def get_query_format_from_prompt(prompt_bundle, num_turn, q_stn, need_q_in_first):
     query_bundle = []
+    
+    if need_q_in_first:
+        prompt_bundle[0] = f"Question: {q_stn[0]} {prompt_bundle[0]}"
+    
     for n in range(num_turn):
         query = []
         for i in range(n):
@@ -221,6 +231,7 @@ if __name__ == "__main__":
     # 내가 추가한 Argument List =================================================================== #
     parser.add_argument("--VLM_type", type=str, default='Idefics2')
     parser.add_argument("--gpu_num", type=int, default=0, help="Define GPU used")
+    parser.add_argument("--USE_DPR", type=bool, default=False)
     
     # 세팅
     args = parser.parse_args()
@@ -230,4 +241,6 @@ if __name__ == "__main__":
     # V-COT 시작
     global device
     device = f'cuda:{args.gpu_num}'
+    # args.USE_DPR = False
+    print(args)
     V_COT(args, dataloader)

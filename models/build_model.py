@@ -15,12 +15,13 @@ def get_model(mode, data_args, model_args, training_args):
                                                   use_DPR=data_args.USE_DPR)
         # 특별한 Image Processor가 필요함.
         if data_args.USE_DPR:
-            from .Idefics2.modeling_DPR_idefics2 import Idefics2ForConditionalGeneration
+            from .Idefics2.modeling_DPR_idefics2_qkv_inverse import Idefics2ForConditionalGeneration
             dpr_image_processor = Idefics2ImageProcessor(do_image_splitting=model_args.do_image_splitting,
                                             image_mean=[0.5,0.5,0.5], image_std=[0.5,0.5,0.5],
-                                            size={"longest_edge":224, "shortest_edge":190}, # 336, 280
+                                            size={"longest_edge":336, "shortest_edge":280}, # 336, 280 / 224 190
                                             use_DPR=True)
             processor.image_processor = dpr_image_processor
+            print(processor.image_processor)
         
         else:
             from .Idefics2.modeling_idefics2 import Idefics2ForConditionalGeneration
@@ -46,17 +47,17 @@ def get_model(mode, data_args, model_args, training_args):
             if model_args.load_ckpt_path:                                                
                 model = Idefics2ForConditionalGeneration.from_pretrained(model_args.load_ckpt_path, 
                                                                     torch_dtype=torch.bfloat16,
-                                                                    quantization_config=BnB_config if model_args.USE_QLORA else None,
+                                                                    quantization_config=BnB_config if ((model_args.USE_QLORA) and (not data_args.USE_DPR)) else None,
                                                                     max_length = model_args.max_length, # 20
-                                                                    low_cpu_mem_usage=True)
+                                                                    low_cpu_mem_usage=False)
                 print(f'Load ckpt: {model_args.load_ckpt_path}')
                 
             else:
                 model = Idefics2ForConditionalGeneration.from_pretrained(model_args.pretrained_model_path,
                                                                     torch_dtype=torch.bfloat16,
-                                                                    quantization_config=BnB_config if model_args.USE_QLORA else None,
+                                                                    quantization_config=BnB_config if ((model_args.USE_QLORA) and (not data_args.USE_DPR)) else None,
                                                                     max_length = model_args.max_length, # 20
-                                                                    low_cpu_mem_usage=True
+                                                                    low_cpu_mem_usage=False
                                                                     # quantization_config=default_quantization_config
                                                                     # _attn_implementation="flash_attention_2"
                                                                     )#.to(training_args.device)

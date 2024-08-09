@@ -68,7 +68,7 @@ class TrainingArguments(Seq2SeqTrainingArguments):
     predict_with_generate: bool=field(default=True)
     should_log: bool=field(default=True)
     seed: int=field(default=1123)
-    ddp_find_unused_parameters: bool=field(default=False)
+    ddp_find_unused_parameters: bool=field(default=True)
     
     # push_to_hub_model_id="idefics2-8b-docvqa-finetuned-tutorial",
     # evaluation_strategy: str="epoch",

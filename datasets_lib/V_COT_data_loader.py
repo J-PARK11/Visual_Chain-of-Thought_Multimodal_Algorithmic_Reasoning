@@ -49,12 +49,14 @@ class V_COT_SMART101_Dataset(Dataset):
             self.num_tot = args.eval_tot
             
         elif self.mode == 'test':
-            self.puzzle_list = args.test_puzzle_list
-            puzzle_ids = self.puzzle_list.split(',')
+            # self.puzzle_list = args.test_puzzle_list
+            # puzzle_ids = self.puzzle_list.split(',')
+            puzzle_ids = [f'{pz_id}' for pz_id in range(1,102)]
             self.num_tot = args.eval_tot
         
         self.qa_info = []
         self.args = args
+        self.except_count = 0
         self.task = args.task
         
         # 시퀀스 퍼즐 예외처리.
@@ -165,22 +167,25 @@ class V_COT_SMART101_Dataset(Dataset):
             Answer_Option_phrase += f'\n{op}. {op_val}'
             opts.append(op_val)
         q_stn = info["Question"]
-        q_stn_out = q_stn + Answer_Option_phrase + '\nPlease answer with the alphabet in the options.'
+        q_stn_out = q_stn + Answer_Option_phrase # + '\nPlease answer with the alphabet in the options.'
         
         option_answer= f'Answer: {info["Answer"]}' # info['Answer']
         
         if self.task=='GT_with_rationale' and self.mode == 'train':
             option_answer = self.GT_with_rationale[im_name]['GT_with_Rationale']
+            q_stn_out = q_stn + Answer_Option_phrase + '\nSolve the problem and answer it with the alphabet in the option. And explain how you solved it.'
         elif self.task=='GPT_augmentation_generation' and self.mode == 'train':
             ref_puzzle_name = self.GT_with_rationale_key_list[pid]
             option_answer = self.GT_with_rationale[ref_puzzle_name]['GT_with_Rationale']  
         elif self.task=='GPT_augmentation_train' and self.mode == 'train':
             rationale = self.GPT_augmentation_dict[im_name]['GT_with_Rationale']
-            if len(rationale) < 1000:
+            if (len(rationale) < 1000) and (option_answer in rationale):
                 option_answer = rationale
-                q_stn_out = q_stn + Answer_Option_phrase + '\nPlease answer with the alphabet in the options and explain how you solved it.'
+                q_stn_out = q_stn + Answer_Option_phrase + '\nSolve the problem and answer it with the alphabet in the option. And explain how you solved it.'
             else:
-                pass
+                self.except_count += 1
+                print(f'Rationale > 1000 or GPT Augmented answer is wrong: {self.except_count}')
+                
         elif self.task =='GPT_paraphrasing' and self.mode == 'train':
             if info['train_seq'] == 0:
                 option_answer = self.GPT_paraphrasing_dict[im_name]['GT_with_Rationale']

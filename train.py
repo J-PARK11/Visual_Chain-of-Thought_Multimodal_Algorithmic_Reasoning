@@ -32,6 +32,10 @@ def train():
     
     # 모델 load...
     model, processor = get_model('train', data_args, model_args, training_args)
+    scratch_modules = ["model.DPR_module_list", "model.DPR_mlp"]
+    for n, p in model.named_parameters():
+        if (((scratch_modules[0] in n) or (scratch_modules[1] in n))):
+            p.requires_grad = True
     print(f'\nModel Parameter numbers: {sum(p.numel() for p in model.parameters() if p.requires_grad)}')
     
     # 데이터로더 load...
