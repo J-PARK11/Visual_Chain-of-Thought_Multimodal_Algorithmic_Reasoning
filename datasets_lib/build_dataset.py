@@ -1,15 +1,26 @@
 import random
 from .V_COT_data_loader import V_COT_SMART101_Dataset
+from .V_COT_METEOR_data_loader import V_COT_METEOR_Dataset, V_COT_METEOR_collator
 
 def get_dataset(training_args, model_args, data_args, processor=None):
-    train_dataset = V_COT_SMART101_Dataset(data_args, 'train')
-    val_dataset = V_COT_SMART101_Dataset(data_args, 'valid')
-    test_dataset = V_COT_SMART101_Dataset(data_args, 'test')
-    collator = V_COT_collator(processor)
     
-    print(f'\nTrain Dataset: {len(train_dataset)}')
-    print(f'Valid Dataset: {len(val_dataset)}, {data_args.val_puzzle_list}')
-    print(f'Test Dataset: {len(test_dataset)}, {data_args.test_puzzle_list}')
+    if data_args.data_type == 'SMART101':    
+        train_dataset = V_COT_SMART101_Dataset(data_args, 'train')
+        val_dataset = V_COT_SMART101_Dataset(data_args, 'valid')
+        test_dataset = V_COT_SMART101_Dataset(data_args, 'test')
+        collator = V_COT_collator(processor)
+        
+        print(f'\nTrain Dataset: {len(train_dataset)}')
+        print(f'Valid Dataset: {len(val_dataset)}, {data_args.val_puzzle_list}')
+        print(f'Test Dataset: {len(test_dataset)}, {data_args.test_puzzle_list}')
+    
+    elif data_args.data_type == 'METEOR':    
+        train_dataset = V_COT_METEOR_Dataset(data_args, 'train')
+        val_dataset = None
+        test_dataset = None
+        collator = V_COT_METEOR_collator(processor)
+    
+        print(f'\nTrain Dataset: {len(train_dataset)}')
         
     return dict(train_dataset=train_dataset, val_dataset=val_dataset, test_dataset=test_dataset, data_collator=collator)
     
@@ -28,7 +39,6 @@ class V_COT_collator:
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": 'Looking at this image, solve the question.'},
                         {"type": "image"},
                         {"type": "text", "text": question}
                     ]

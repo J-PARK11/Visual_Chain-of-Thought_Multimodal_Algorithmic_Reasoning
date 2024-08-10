@@ -173,7 +173,7 @@ class V_COT_SMART101_Dataset(Dataset):
         
         if self.task=='GT_with_rationale' and self.mode == 'train':
             option_answer = self.GT_with_rationale[im_name]['GT_with_Rationale']
-            q_stn_out = q_stn + Answer_Option_phrase + '\nSolve the problem and answer it with the alphabet in the option. And explain how you solved it.'
+            q_stn_out = q_stn + Answer_Option_phrase + '\nPlease solve the above question and explain the solution process.'
         elif self.task=='GPT_augmentation_generation' and self.mode == 'train':
             ref_puzzle_name = self.GT_with_rationale_key_list[pid]
             option_answer = self.GT_with_rationale[ref_puzzle_name]['GT_with_Rationale']  
@@ -181,7 +181,7 @@ class V_COT_SMART101_Dataset(Dataset):
             rationale = self.GPT_augmentation_dict[im_name]['GT_with_Rationale']
             if (len(rationale) < 1000) and (option_answer in rationale):
                 option_answer = rationale
-                q_stn_out = q_stn + Answer_Option_phrase + '\nSolve the problem and answer it with the alphabet in the option. And explain how you solved it.'
+                q_stn_out = q_stn + Answer_Option_phrase + '\nPlease solve the above question and explain the solution process.'
             else:
                 self.except_count += 1
                 print(f'Rationale > 1000 or GPT Augmented answer is wrong: {self.except_count}')
