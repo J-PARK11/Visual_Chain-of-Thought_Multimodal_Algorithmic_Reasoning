@@ -1041,7 +1041,7 @@ class Trainer:
                     "params": [
                         p for n, p in opt_model.named_parameters() if (n in decay_parameters and p.requires_grad and scratch_modules[0] not in n and scratch_modules[1] not in n)
                     ],
-                    "weight_decay": self.args.weight_decay, "lr": 8e-6
+                    "weight_decay": self.args.weight_decay*10, "lr": 8e-6
                 },
                 {
                     "params": [
@@ -1053,7 +1053,7 @@ class Trainer:
                     "params": [
                         p for n, p in opt_model.named_parameters() if (((scratch_modules[0] in n) or (scratch_modules[1] in n)) and p.requires_grad)
                     ],
-                    "weight_decay": 0.0, "lr": 8e-3
+                    "weight_decay": self.args.weight_decay, "lr": 8e-4
                 },
             ]
 

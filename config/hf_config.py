@@ -10,6 +10,7 @@ from transformers import TrainingArguments, PretrainedConfig, Seq2SeqTrainingArg
 @dataclass
 class DataArguments():
     task: str=field(default="supervised")
+    data_type: str=field(default="SMART101")
     data_root: str=field(default="/data/SMART101-release-v1/SMART101-Data/")
     train_puzzle_list: str=field(default=None)
     val_puzzle_list: str=field(default="1,2,6,7,10,17,19,40,77,80,81,82,83,85,88,92,95")
@@ -60,7 +61,7 @@ class TrainingArguments(Seq2SeqTrainingArguments):
     save_strategy: str=field(default="steps")
     save_steps: int=field(default=500)
     save_total_limit: int=field(default=20)
-    evaluation_strategy: str=field(default="steps")
+    evaluation_strategy: str=field(default=None)
     eval_steps: int=field(default=100)
     bf16: bool=field(default=True)
     remove_unused_columns: bool=field(default=False)

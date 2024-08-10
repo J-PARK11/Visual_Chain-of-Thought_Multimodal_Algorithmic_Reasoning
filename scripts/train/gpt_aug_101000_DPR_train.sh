@@ -1,8 +1,8 @@
 # DDP run script
 export CUDA_VISIBLE_DEVICES=0,1
 torchrun --nproc_per_node 2 train.py \
-    --run_name DPR_grad_true \
-    --output_dir ./checkpoints/DPR_grad_true/ \
+    --run_name level2_reg_DPR \
+    --output_dir ./checkpoints/level2_reg_DPR/ \
     --task GPT_augmentation_train \
     --train_tot 1000 \
     --eval_tot 3 \
@@ -10,6 +10,7 @@ torchrun --nproc_per_node 2 train.py \
     --per_device_train_batch_size 1 \
     --per_device_eval_batch_size  1 \
     --gradient_accumulation_steps 2 \
+    --lora_dropout 0.2 \
     --report_to wandb \
     --logging_steps 40 \
     --evaluation_strategy steps \

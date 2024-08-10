@@ -62,12 +62,14 @@ def V_COT(args, dataloader):
                                             size={"longest_edge":336, "shortest_edge":280}, # 336, 280
                                             use_DPR=True)
             processor.image_processor = dpr_image_processor
+            print(f'USE DPR Processor & Model')
         else:
             from models.Idefics2.modeling_idefics2 import Idefics2ForConditionalGeneration
                                                   
         if args.load_ckpt_path:                                                
             model = Idefics2ForConditionalGeneration.from_pretrained(args.load_ckpt_path, 
-                                                                    torch_dtype=torch.bfloat16).to(device)
+                                                                    torch_dtype=torch.bfloat16,
+                                                                    low_cpu_mem_usage=False,).to(device)
             print(f'Load ckpt: {args.load_ckpt_path}')
         else:
             model = Idefics2ForConditionalGeneration.from_pretrained("HuggingFaceM4/idefics2-8b", 
@@ -78,7 +80,6 @@ def V_COT(args, dataloader):
     def Execute(epoch, args, target_dataloader):
         TP, ALL = 0, 0
         puzzle_len  = len(args.test_puzzle_list.split(','))
-        print(f'Batch Size: {args.batch_size}, #puzzle: {puzzle_len}, #instance: {args.eval_tot}, #Data: {ALL}\n')
         for i, (im, im_path, pids, q_stn, o, ao, a, av) in tqdm(enumerate(target_dataloader)):
 
             # if i >= 5 : break  # 배리어
@@ -93,14 +94,13 @@ def V_COT(args, dataloader):
                 exp1_prompt = [
                     {"role": "user",
                     "content": [
-                        # {"type": "text", "text": 'Looking at this image, solve the question. Please return only answer like this: Answer: ?'},
-                        # {"type": "text", "text": 'Looking at this image, solve the question and explain how you solved it step-by-step.'},
-                        # {"type": "text", "text": 'Looking at this image, solve the answer along with the solution process.'},
-                        {"type": "text", "text": 'Solve the problem and answer it with the alphabet in the option. And explain how you solved it.'},
+                        # {"type": "text", "text": 'Please solve the above question and return only answer like this: Answer: ?'},          # 답만 추론하는 프롬프트.
+                        {"type": "text", "text": 'Looking at this image, solve the question and explain how you solved it step-by-step.'},  # Phase1 베스트 프롬프트.
+                        # {"type": "text", "text": 'Please solve the above question and explain the solution process.'},                    # 학습 때와 같은 프롬프트.
                         {"type": "image"},
                         {"type": "text", "text": f'Question: {question}'}]}
                     for question in q_stn]
-                
+            
                 exp1_query = processor.apply_chat_template(exp1_prompt, add_generation_prompt=True)
                 exp1_query_input = processor(text=exp1_query, images=im, return_tensors='pt').to(device)
                 with torch.no_grad():
@@ -109,30 +109,9 @@ def V_COT(args, dataloader):
                 
                 for j in range(len(exp1_pred)):
                     exp1_pred[j] = exp1_pred[j].split('Assistant: ')[-1]
+                    print(q_stn[j])
+                    print(exp1_pred[j])
                     
-                # Exp1: Q, I => A ==========================nerate(**exp2_query_input, max_new_tokens=500)
-                #     exp2_pred = processor.batch_decode(exp2_pred_id, skip_special_tokens=True)
-                
-                # for j in range(len(exp2_pred)):
-                #     exp2_pred[j] = exp2_pred[j].split('Assistant: ')[-1]
-                    
-                # # Exp6: Q, I, GT Answer sheet => A ================================================== #
-                # exp6_prompt = [
-                #     {"role": "user",
-                #     "content": [
-                #         {"type": "text", "text": 'Explain the contents of image.'},
-                #         {"type": "image"}]}
-                #     for question in q_stn]
-                
-                # exp6_query = processor.apply_chat_template(exp6_prompt, add_generation_prompt=True)
-                # exp6_query_input = processor(text=exp6_query, images=im, return_tensors='pt').to(device)
-                # with torch.no_grad():
-                #     exp6_pred_id = model.generate(**exp6_query_input, max_new_tokens=500)
-                #     exp6_pred = processor.batch_decode(exp6_pred_id, skip_special_tokens=True)
-                
-                # for j in range(len(exp6_pred)):
-                #     exp6_pred[j] = exp6_pred[j].split('Assistant: ')[-1]
-                
             # Result Logging                                
             for iter, img_path in enumerate(im_path):
                 
@@ -156,6 +135,10 @@ def V_COT(args, dataloader):
                                          'GT_option': ao[iter][-1],
                                          'GT_value': o[iter][option_dict[ao[iter][-1]]],
                                          'Hit': hit}
+                
+            if i < 100 == 0:
+                with open(result_json_path,'w') as f:
+                    json.dump(result_json, f, ensure_ascii=False, indent=4)
                 
                 # print('\n', img_name, exp2_pred[iter])
                 # puzzle_save_path = os.path.join(args.save_root, 'puzzle', str(int(pids)), img_name)

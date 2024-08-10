@@ -21,10 +21,12 @@ def get_model(mode, data_args, model_args, training_args):
                                             size={"longest_edge":336, "shortest_edge":280}, # 336, 280 / 224 190
                                             use_DPR=True)
             processor.image_processor = dpr_image_processor
+            low_cpu_mem_usage=False
             print(processor.image_processor)
         
         else:
             from .Idefics2.modeling_idefics2 import Idefics2ForConditionalGeneration
+            low_cpu_mem_usage=True
                                                         
         if 'train' in mode:
             if model_args.USE_LORA :
@@ -49,7 +51,7 @@ def get_model(mode, data_args, model_args, training_args):
                                                                     torch_dtype=torch.bfloat16,
                                                                     quantization_config=BnB_config if ((model_args.USE_QLORA) and (not data_args.USE_DPR)) else None,
                                                                     max_length = model_args.max_length, # 20
-                                                                    low_cpu_mem_usage=False)
+                                                                    low_cpu_mem_usage=low_cpu_mem_usage)
                 print(f'Load ckpt: {model_args.load_ckpt_path}')
                 
             else:
@@ -57,7 +59,7 @@ def get_model(mode, data_args, model_args, training_args):
                                                                     torch_dtype=torch.bfloat16,
                                                                     quantization_config=BnB_config if ((model_args.USE_QLORA) and (not data_args.USE_DPR)) else None,
                                                                     max_length = model_args.max_length, # 20
-                                                                    low_cpu_mem_usage=False
+                                                                    low_cpu_mem_usage=low_cpu_mem_usage
                                                                     # quantization_config=default_quantization_config
                                                                     # _attn_implementation="flash_attention_2"
                                                                     )#.to(training_args.device)
@@ -74,12 +76,12 @@ def get_model(mode, data_args, model_args, training_args):
                 model = Idefics2ForConditionalGeneration.from_pretrained(model_args.load_ckpt_path, 
                                                                         torch_dtype=torch.bfloat16,
                                                                         max_length=model_args.max_length,
-                                                                        low_cpu_mem_usage=True)            
+                                                                        low_cpu_mem_usage=low_cpu_mem_usage)            
             else:
                 model = Idefics2ForConditionalGeneration.from_pretrained(model_args.pretrained_model_path, 
                                                                     torch_dtype=torch.bfloat16,
                                                                     max_length=model_args.max_length,
-                                                                    low_cpu_mem_usage=True)     
+                                                                    low_cpu_mem_usage=low_cpu_mem_usage)     
             
     else:
         raise NotImplementedError

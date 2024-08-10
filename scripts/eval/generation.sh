@@ -30,3 +30,5 @@ python generation.py --batch_size 1 --num_workers 8 --save_root ./V_COT_output/a
 
 python generation.py --batch_size 1 --num_workers 8 --save_root ./V_COT_output/ablation_study/ --output_name GPT_aug_level2_DPR_qkv_reverse_1000tot_dev_cpkt_2000.json --load_ckpt_path checkpoints/GPT_aug_level2_DPR_qkv_reverse_1000tot_dev/checkpoint-2000 --eval_tot 3 --gpu_num 0
 python generation.py --batch_size 1 --num_workers 8 --save_root ./V_COT_output/ablation_study/ --output_name GPT_aug_level2_DPR_qkv_reverse_1000tot_dev_cpkt_4000.json --load_ckpt_path checkpoints/GPT_aug_level2_DPR_qkv_reverse_1000tot_dev/checkpoint-4000 --eval_tot 3 --gpu_num 1
+
+python generation.py --batch_size 1 --num_workers 8 --save_root ./V_COT_output/ablation_study/ --output_name level2_regularized_30300EA.json --load_ckpt_path checkpoints/level2_regularized/checkpoint-22250 --eval_tot 300 --gpu_num 3

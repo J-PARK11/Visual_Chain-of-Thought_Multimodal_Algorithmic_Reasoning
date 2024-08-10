@@ -185,7 +185,7 @@ class Idefics2Processor(ProcessorMixin):
 
             if self.image_processor.do_image_splitting:
                 if self.use_DPR:
-                    image_str = image_str * 9
+                    image_str = image_str * 10
                 else:
                     # A single image token is split into 4 patches + 1 original image
                     image_str = image_str * 5

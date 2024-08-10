@@ -58,7 +58,7 @@ def V_COT(args, dataloader):
             from models.Idefics2.modeling_DPR_idefics2 import Idefics2ForConditionalGeneration
             dpr_image_processor = Idefics2ImageProcessor(do_image_splitting=True,
                                             image_mean=[0.5,0.5,0.5], image_std=[0.5,0.5,0.5],
-                                            size={"longest_edge":224, "shortest_edge":190}, # 336, 280 / 224, 190
+                                            size={"longest_edge":336, "shortest_edge":280}, # 336, 280 / 224, 190
                                             use_DPR=args.USE_DPR)
             processor.image_processor = dpr_image_processor
         else:
@@ -82,7 +82,6 @@ def V_COT(args, dataloader):
         
         TP, ALL = 0, 0
         puzzle_len  = len(args.test_puzzle_list.split(','))
-        print(f'Batch Size: {args.batch_size}, #puzzle: {puzzle_len}, #instance: {args.eval_tot}, #Data: {ALL}\n')
         for i, (im, im_path, pids, q_stn, o, ao, a, av) in tqdm(enumerate(target_dataloader)):
 
             # if i >= 5 : break  # 배리어
@@ -118,6 +117,7 @@ def V_COT(args, dataloader):
                         prev_turn_answer.append(answer)
                         
                 query.append({'role':'assistant', 'Answer':f'{answer}'})                        
+                print(answer)
                 
                 st = answer.upper().find('ANSWER: ')
                 if st<0:
@@ -140,7 +140,11 @@ def V_COT(args, dataloader):
                                          'GT_option': ao[0][-1],
                                          'GT_value': o[0][option_dict[ao[0][-1]]],
                                          'Hit': hit}
-                                         
+            
+            if i < 100 == 0:
+                with open(result_json_path,'w') as f:
+                    json.dump(result_json, f, ensure_ascii=False, indent=4)
+                                                 
                 # ============= =================================================== #
                     
             Whole_end_time = time.time()
@@ -241,6 +245,6 @@ if __name__ == "__main__":
     # V-COT 시작
     global device
     device = f'cuda:{args.gpu_num}'
-    # args.USE_DPR = False
+    args.USE_DPR = False
     print(args)
     V_COT(args, dataloader)

@@ -1,9 +1,9 @@
 # DDP run script
-export CUDA_VISIBLE_DEVICES=0,1,2,3
-torchrun --nproc_per_node 4 train.py \
-    --run_name GPT_aug_level2_train \
-    --output_dir ./checkpoints/GPT_aug_level2_train/ \
-    --task GPT_augmentation_train \
+export CUDA_VISIBLE_DEVICES=0,1,2
+torchrun --nproc_per_node 3 train.py \
+    --run_name METEOR_3000h_FT \
+    --output_dir ./checkpoints/METEOR_3000h_FT/ \
+    --task METEOR_3000h_FT \
     --train_tot 1000 \
     --eval_tot 3 \
     --num_train_epochs 3 \

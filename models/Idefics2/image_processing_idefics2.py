@@ -429,6 +429,7 @@ class Idefics2ImageProcessor(BaseImageProcessor):
                 self._crop(image, 0, div2_height, div1_width, height, input_data_format),
                 self._crop(image, div1_width, div2_height, div2_width, height, input_data_format),
                 self._crop(image, div2_width, div2_height, width, height, input_data_format),
+                image
             ]
             
         else:

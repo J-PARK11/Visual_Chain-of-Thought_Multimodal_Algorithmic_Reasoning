@@ -1478,8 +1478,8 @@ class Idefics2Model(Idefics2PreTrainedModel):
         # Dynamic Patch Retrieval
         self.DPR_module_list = nn.ModuleList()
         for i in range(self.heads):
-            self.DPR_module_list.append(DPRCrossAttention(n_split=9, image_seq_len=64, input_dim=4096, heads=4))
-        self.DPR_mlp = Mlp(input_dim=4096)
+            self.DPR_module_list.append(DPRCrossAttention(n_split=10, image_seq_len=64, input_dim=4096, heads=4, drop=0.3))
+        self.DPR_mlp = Mlp(input_dim=4096, drop=0.3)
 
         self.image_seq_len = config.perceiver_config.resampler_n_latents            # 64
         self.image_token_id = self.config.image_token_id                            # 32001
@@ -1908,7 +1908,7 @@ class Idefics2ForConditionalGeneration(Idefics2PreTrainedModel):
                 option_pred_sfm = self.option_softmax(option_pred)
                 option_loss = loss_fct(option_pred_sfm, option_gt)*2
                 loss = (sentence_loss + option_loss)
-                print(sentence_loss, option_loss)
+                print(float(sentence_loss), float(option_loss))
             else:
                 loss = sentence_loss
             
@@ -2021,7 +2021,7 @@ class Idefics2ForConditionalGeneration(Idefics2PreTrainedModel):
         return reordered_past
 
 class DPRCrossAttention(nn.Module):
-    def __init__(self, n_split=9, image_seq_len=64, input_dim=4096, heads=4):
+    def __init__(self, n_split=9, image_seq_len=64, input_dim=4096, heads=4, drop=0.2):
         super().__init__()
         self.img_token = 32001
         self.n_split = n_split
@@ -2035,9 +2035,9 @@ class DPRCrossAttention(nn.Module):
         self.value = nn.Linear(self.input_dim, self.hidden_dim)
         self.softmax = nn.Softmax(dim=2)
         
-        self.attn_drop = nn.Dropout(0.2)
+        self.attn_drop = nn.Dropout(drop)
         self.proj = nn.Linear(self.hidden_dim, self.hidden_dim)
-        self.proj_drop = nn.Dropout(0.2)
+        self.proj_drop = nn.Dropout(drop)
    
     def forward(self, id, src, tgt): 
         batch = src.shape[0]
@@ -2059,6 +2059,7 @@ class DPRCrossAttention(nn.Module):
         weighted = torch.bmm(attention, values)                                    
         weigthed = self.proj(weighted)
         weighted = self.proj_drop(weighted)
+        weighted += tgt
         weighted = weighted.view(self.n_split, -1, self.hidden_dim)
 
         return weighted
