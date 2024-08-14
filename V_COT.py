@@ -61,11 +61,17 @@ def V_COT(args, dataloader):
                                             size={"longest_edge":336, "shortest_edge":280}, # 336, 280 / 224, 190
                                             use_DPR=args.USE_DPR)
             processor.image_processor = dpr_image_processor
+            print(f'USE DPR Processor & Model')
         else:
             from models.Idefics2.modeling_idefics2 import Idefics2ForConditionalGeneration
                                                   
-        if args.load_ckpt_path:                                                
-            model = Idefics2ForConditionalGeneration.from_pretrained(args.load_ckpt_path, 
+        if args.load_ckpt_path:                                         
+            if args.USE_DPR:             
+                model_path = os.path.join(args.load_ckpt_path, 'model.pth')                
+                model = torch.load(model_path).to(device)
+                print(f'Load DPR Model Success: {model_path}')       
+            else:
+                model = Idefics2ForConditionalGeneration.from_pretrained(args.load_ckpt_path, 
                                                                     torch_dtype=torch.bfloat16).to(device)
             print(f'Load ckpt: {args.load_ckpt_path}')
         else:
@@ -141,7 +147,7 @@ def V_COT(args, dataloader):
                                          'GT_value': o[0][option_dict[ao[0][-1]]],
                                          'Hit': hit}
             
-            if i < 100 == 0:
+            if i % 100 == 0:
                 with open(result_json_path,'w') as f:
                     json.dump(result_json, f, ensure_ascii=False, indent=4)
                                                  
@@ -245,6 +251,6 @@ if __name__ == "__main__":
     # V-COT 시작
     global device
     device = f'cuda:{args.gpu_num}'
-    args.USE_DPR = False
+    # args.USE_DPR = False
     print(args)
     V_COT(args, dataloader)

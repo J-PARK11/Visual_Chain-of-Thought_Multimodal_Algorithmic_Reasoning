@@ -3461,6 +3461,9 @@ class Trainer:
         output_dir = output_dir if output_dir is not None else self.args.output_dir
         os.makedirs(output_dir, exist_ok=True)
         logger.info(f"Saving model checkpoint to {output_dir}")
+        
+        model_save_path = os.path.join(output_dir, 'model.pth') # =============== 추가된 부분 =============== #
+        torch.save(self.model, model_save_path)
 
         supported_classes = (PreTrainedModel,) if not is_peft_available() else (PreTrainedModel, PeftModel)
         # Save a trained model and configuration using `save_pretrained()`.

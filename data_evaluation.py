@@ -22,15 +22,15 @@ import lib.V_COT_globvars as gv
 import datasets_lib.V_COT_data_loader as dl
 
 def V_COT(args, dataloader):
-    print("\n========== Visual Chain of Thought Single Turn Generation ==========\n")
+    print("\n========== Visual Chain of Thought Reasoning Analysis Start ==========\n")
     
     # V_COT 결과 저장할 JSON 파일 세팅 ========================================== #
     global result_json_path
     result_json_path = os.path.join(args.save_root, args.output_name)
-    # puzzle_list = args.test_puzzle_list.split(',')
-    # for pids in puzzle_list:
-    #     puzzle_save_root = os.path.join(args.save_root, 'puzzle', pids)
-    #     if not os.path.exists(puzzle_save_root): os.makedirs(puzzle_save_root)
+    puzzle_list = args.test_puzzle_list.split(',')
+    for pids in puzzle_list:
+        puzzle_save_root = os.path.join(args.save_root, 'puzzle', pids)
+        if not os.path.exists(puzzle_save_root): os.makedirs(puzzle_save_root)
     print(f'Result Json path: {result_json_path}')
             
     global result_json
@@ -42,49 +42,28 @@ def V_COT(args, dataloader):
     global processor
     if args.VLM_type == "IBLIP":
         from transformers import InstructBlipProcessor, InstructBlipForConditionalGeneration
-        
         model = InstructBlipForConditionalGeneration.from_pretrained("Salesforce/instructblip-flan-t5-xl").to(torch.bfloat16).to(device)
         processor = InstructBlipProcessor.from_pretrained("Salesforce/instructblip-flan-t5-xl")
         
     elif args.VLM_type == "Idefics2":
         from models.Idefics2.processing_idefics2 import Idefics2Processor
-        from models.Idefics2.image_processing_idefics2 import Idefics2ImageProcessor
-        
+        from models.Idefics2.modeling_idefics2 import Idefics2ForConditionalGeneration
         processor = Idefics2Processor.from_pretrained("HuggingFaceM4/idefics2-8b",
-                                                  do_image_splitting=True,
-                                                  size={"longest_edge": 448, "shortest_edge": 378},
-                                                  use_DPR=args.USE_DPR)
-        # 특별한 Image Processor가 필요함.
-        if args.USE_DPR:
-            from models.Idefics2.modeling_DPR_idefics2 import Idefics2ForConditionalGeneration
-            dpr_image_processor = Idefics2ImageProcessor(do_image_splitting=True,
-                                            image_mean=[0.5,0.5,0.5], image_std=[0.5,0.5,0.5],
-                                            size={"longest_edge":336, "shortest_edge":280}, # 336, 280
-                                            use_DPR=True)
-            processor.image_processor = dpr_image_processor
-            print(f'USE DPR Processor & Model')
-        else:
-            from models.Idefics2.modeling_idefics2 import Idefics2ForConditionalGeneration
-                                                  
-        if args.load_ckpt_path:   
-            if args.USE_DPR:             
-                model_path = os.path.join(args.load_ckpt_path, 'model.pth')                
-                model = torch.load(model_path).to(device)
-                print(f'Load DPR Model Success: {model_path}')
-            else:
-                model = Idefics2ForConditionalGeneration.from_pretrained(args.load_ckpt_path, 
-                                                                        torch_dtype=torch.bfloat16,
-                                                                        low_cpu_mem_usage=False,).to(device)
+                                                  do_image_splitting=False,
+                                                  size= {"longest_edge": 448, "shortest_edge": 378})
+        if args.load_ckpt_path:                                                
+            model = Idefics2ForConditionalGeneration.from_pretrained(args.load_ckpt_path, 
+                                                                    torch_dtype=torch.bfloat16).to(device)
             print(f'Load ckpt: {args.load_ckpt_path}')
         else:
             model = Idefics2ForConditionalGeneration.from_pretrained("HuggingFaceM4/idefics2-8b", 
                                                                     torch_dtype=torch.bfloat16).to(device)
-    print(f'\nModel Parameter numbers: {sum(p.numel() for p in model.parameters() if p.requires_grad)}')
 
     # V_COT 실행 ============================================================= #
     def Execute(epoch, args, target_dataloader):
         TP, ALL = 0, 0
         puzzle_len  = len(args.test_puzzle_list.split(','))
+        print(f'Batch Size: {args.batch_size}, #puzzle: {puzzle_len}, #instance: {args.eval_tot}, #Data: {ALL}\n')
         for i, (im, im_path, pids, q_stn, o, ao, a, av) in tqdm(enumerate(target_dataloader)):
 
             # if i >= 5 : break  # 배리어
@@ -99,26 +78,45 @@ def V_COT(args, dataloader):
                 exp1_prompt = [
                     {"role": "user",
                     "content": [
-                        # {"type": "text", "text": 'Please solve the above question and return only answer like this: Answer: ?'},          # 답만 추론하는 프롬프트.
-                        {"type": "text", "text": 'Looking at this image, solve the question and explain how you solved it step-by-step.'},  # Phase1 베스트 프롬프트.
-                        # {"type": "text", "text": 'Please solve the above question and explain the solution process.'},                    # 학습 때와 같은 프롬프트.
+                        {"type": "text", "text": 'Looking at this image, solve the question. Please return only answer like this: Answer: ?'},
+                        # {"type": "text", "text": 'Looking at this image, solve the question and explain how you solved it step-by-step.'},
                         {"type": "image"},
                         {"type": "text", "text": f'Question: {question}'}]}
                     for question in q_stn]
-            
+                
                 exp1_query = processor.apply_chat_template(exp1_prompt, add_generation_prompt=True)
                 exp1_query_input = processor(text=exp1_query, images=im, return_tensors='pt').to(device)
                 with torch.no_grad():
-                    exp1_pred_id = model.generate(**exp1_query_input, max_new_tokens=600)
+                    exp1_pred_id = model.generate(**exp1_query_input, max_new_tokens=500)
                     exp1_pred = processor.batch_decode(exp1_pred_id, skip_special_tokens=True)
                 
                 for j in range(len(exp1_pred)):
                     exp1_pred[j] = exp1_pred[j].split('Assistant: ')[-1]
-                    print(q_stn[j])
-                    print(exp1_pred[j])
-                    print(ao[j][-1])
                     
-            # Result Logging                                
+                # Exp1: Q, I => A ==========================nerate(**exp2_query_input, max_new_tokens=500)
+                #     exp2_pred = processor.batch_decode(exp2_pred_id, skip_special_tokens=True)
+                
+                # for j in range(len(exp2_pred)):
+                #     exp2_pred[j] = exp2_pred[j].split('Assistant: ')[-1]
+                    
+                # # Exp6: Q, I, GT Answer sheet => A ================================================== #
+                # exp6_prompt = [
+                #     {"role": "user",
+                #     "content": [
+                #         {"type": "text", "text": 'Explain the contents of image.'},
+                #         {"type": "image"}]}
+                #     for question in q_stn]
+                
+                # exp6_query = processor.apply_chat_template(exp6_prompt, add_generation_prompt=True)
+                # exp6_query_input = processor(text=exp6_query, images=im, return_tensors='pt').to(device)
+                # with torch.no_grad():
+                #     exp6_pred_id = model.generate(**exp6_query_input, max_new_tokens=500)
+                #     exp6_pred = processor.batch_decode(exp6_pred_id, skip_special_tokens=True)
+                
+                # for j in range(len(exp6_pred)):
+                #     exp6_pred[j] = exp6_pred[j].split('Assistant: ')[-1]
+                
+            # Result Logging                                 
             for iter, img_path in enumerate(im_path):
                 
                 st = exp1_pred[iter].upper().find('ANSWER: ')
@@ -142,10 +140,6 @@ def V_COT(args, dataloader):
                                          'GT_value': o[iter][option_dict[ao[iter][-1]]],
                                          'Hit': hit}
                 
-            if i % 100 == 0:
-                with open(result_json_path,'w') as f:
-                    json.dump(result_json, f, ensure_ascii=False, indent=4)
-                
                 # print('\n', img_name, exp2_pred[iter])
                 # puzzle_save_path = os.path.join(args.save_root, 'puzzle', str(int(pids)), img_name)
                 # plt.figure(figsize=(6,6))
@@ -168,8 +162,7 @@ def V_COT(args, dataloader):
             Whole_end_time = time.time()
             Whole_dur_time = Whole_end_time - Whole_start_time
             print(f' Batch: {i}/{len(target_dataloader)}  Dur_time: {Whole_dur_time:.4f} for {len(im)} images')
-            try: print(f"Accuracy = {TP}/{ALL} = {TP/ALL:.4f}")
-            except: pass
+            print(f"Accuracy = {TP}/{ALL} = {TP/ALL:.4f}")
 
     for epoch in range(1):
 
@@ -224,7 +217,6 @@ if __name__ == "__main__":
     # 내가 추가한 Argument List =================================================================== #
     parser.add_argument("--VLM_type", type=str, default='Idefics2')
     parser.add_argument("--gpu_num", type=int, default=0, help="Define GPU used")
-    parser.add_argument("--USE_DPR", type=bool, default=False)
     
     # 세팅
     args = parser.parse_args()

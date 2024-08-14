@@ -1,8 +1,8 @@
 # DDP run script
-export CUDA_VISIBLE_DEVICES=0,1
-torchrun --nproc_per_node 2 train.py \
-    --run_name level2_reg_DPR \
-    --output_dir ./checkpoints/level2_reg_DPR/ \
+export CUDA_VISIBLE_DEVICES=1,2,3
+torchrun --nproc_per_node 3 train.py \
+    --run_name level2_regularized_DPR_qkv_original \
+    --output_dir ./checkpoints/level2_regularized_DPR/ \
     --task GPT_augmentation_train \
     --train_tot 1000 \
     --eval_tot 3 \
@@ -16,7 +16,7 @@ torchrun --nproc_per_node 2 train.py \
     --evaluation_strategy steps \
     --eval_steps 40 \
     --save_strategy steps \
-    --save_steps 2000 \
+    --save_steps 5000 \
     --save_total_limit 30 \
     --gpt_data_include_level 2 \
     --val_puzzle_list 94,95,96,97,98,99,101,61,62,65,66,67,69,70,71,72,73,74,75,76,77 \

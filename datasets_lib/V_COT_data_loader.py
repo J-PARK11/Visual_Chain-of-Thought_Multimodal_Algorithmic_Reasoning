@@ -184,7 +184,7 @@ class V_COT_SMART101_Dataset(Dataset):
                 q_stn_out = q_stn + Answer_Option_phrase + '\nPlease solve the above question and explain the solution process.'
             else:
                 self.except_count += 1
-                print(f'Rationale > 1000 or GPT Augmented answer is wrong: {self.except_count}')
+                # print(f'Rationale > 1000 or GPT Augmented answer is wrong: {self.except_count}')
                 
         elif self.task =='GPT_paraphrasing' and self.mode == 'train':
             if info['train_seq'] == 0:

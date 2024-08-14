@@ -15,7 +15,7 @@ def get_model(mode, data_args, model_args, training_args):
                                                   use_DPR=data_args.USE_DPR)
         # 특별한 Image Processor가 필요함.
         if data_args.USE_DPR:
-            from .Idefics2.modeling_DPR_idefics2_qkv_inverse import Idefics2ForConditionalGeneration
+            from .Idefics2.modeling_DPR_idefics2 import Idefics2ForConditionalGeneration
             dpr_image_processor = Idefics2ImageProcessor(do_image_splitting=model_args.do_image_splitting,
                                             image_mean=[0.5,0.5,0.5], image_std=[0.5,0.5,0.5],
                                             size={"longest_edge":336, "shortest_edge":280}, # 336, 280 / 224 190
