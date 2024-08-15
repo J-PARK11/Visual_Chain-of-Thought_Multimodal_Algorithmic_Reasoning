@@ -10,7 +10,7 @@ from transformers import TrainingArguments, PretrainedConfig, Seq2SeqTrainingArg
 @dataclass
 class DataArguments():
     task: str=field(default="supervised")
-    data_root: str=field(default="/data/SMART101-release-v1/SMART101-Data/")
+    data_root: str=field(default="/home/work/g-earth-22/VLM/database/ORIGINAL/SMART-101/data/SMART101-release-v1/SMART101-Data")
     train_puzzle_list: str=field(default=None)
     val_puzzle_list: str=field(default="1,2,6,7,10,17,19,40,77,80,81,82,83,85,88,92,95")
     test_puzzle_list: str=field(default="1,2,6,7,10,17,19,40,77,80,81,82,83,85,88,92,95")
@@ -22,7 +22,7 @@ class DataArguments():
     USE_DPR: bool=field(default=False)
     GT_with_rationale_dict_path: str=field(default='./V_COT_output/GT/GT_rationale_dataset_develop.json')
     GPT_paraphrasing_dict_path: str=field(default='./V_COT_output/GT/gpt_paraphrasing_result.json')
-    GPT_augmentation_dict_path: str=field(default='./V_COT_output/GPT_aug/GPT_augmented_101000/gpt_augmentation_result_total.json')
+    GPT_augmentation_dict_path: str=field(default='/home/work/g-earth-22/VLM/database/ORIGINAL/SMART-101-VCOTGEN/gpt_augmentation_result_total.json')
     
     # {'custom', 'supervised', 'zero_shot', 'GT_with_rationale', 'GPT_augmentation_generation', 'GPT_augmentation_train'}
     # 1, 2, 6, 7, 19, 40, 44, 77
@@ -40,6 +40,7 @@ class ModelArguments(PretrainedConfig):
     lora_alpha: int=field(default=32)
     lora_dropout: float=field(default=0.05)
     max_length: int=field(default=20)
+    max_new_tokens: int=field(default=600)
     return_dict: bool=field(default=True)
     load_ckpt_path: str=field(default=None) # "./checkpoints/GPT_augmentation/checkpoint-1344/"
 
@@ -48,11 +49,12 @@ class TrainingArguments(Seq2SeqTrainingArguments):
 
     # project_name="Visual_Chain-of-Thought_Project"
     run_name: str=field(default="Visual_Chain-of-Thought_Project_Demo")
+    proj_name: str=field(default="VCOT_HYKT")
     num_train_epoch: int=field(default=3)
     per_device_train_batch_size: int=field(default=2)
     per_device_eval_batch_size: int=field(default=2)
     gradient_accumulation_steps: int=field(default=2)
-    warmup_steps: int=field(default=50)
+    warmup_steps: int=field(default=1000)
     learning_rate: float=field(default=1e-4)
     weight_decay: float=field(default=0.01)
     logging_steps: int=field(default=25)
@@ -79,5 +81,5 @@ class TrainingArguments(Seq2SeqTrainingArguments):
     # should_log: bool=True
     # pretrained_module_lr: float=field(default=1e-6) #learning rate for pretrained moduel
     # scratch_module_lr: float=field(default=1e-4) #learning rate for modules which are trained from scratch
-    # predict_with_generate: bool=True # evaluate시 AR방식으로 생성해서 결과 뽑아주게함. False면 teacher forcing
+    predict_with_generate: bool=True # evaluate시 AR방식으로 생성해서 결과 뽑아주게함. False면 teacher forcing
     # max_length=256

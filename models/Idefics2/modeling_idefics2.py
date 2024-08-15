@@ -1538,9 +1538,9 @@ class Idefics2Model(Idefics2PreTrainedModel):
         special_image_token_mask = input_ids == self.image_token_id
         new_inputs_embeds = inputs_embeds.clone()
         reshaped_image_hidden_states = image_hidden_states.view(-1, vision_hidden_size)
-        print(image_hidden_states.shape)
-        print(new_inputs_embeds.shape)
-        print(special_image_token_mask.shape)
+        # print(image_hidden_states.shape)
+        # print(new_inputs_embeds.shape)
+        # print(special_image_token_mask.shape)
         new_inputs_embeds[special_image_token_mask] = reshaped_image_hidden_states
         return new_inputs_embeds
 
@@ -1999,3 +1999,4 @@ class Idefics2ForConditionalGeneration(Idefics2PreTrainedModel):
                 tuple(past_state.index_select(0, beam_idx.to(past_state.device)) for past_state in layer_past),
             )
         return reordered_past
+

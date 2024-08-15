@@ -24,22 +24,26 @@ def train():
     set_seed(training_args.seed)
     local_rank = training_args.local_rank
     gv.custom_globals_init()
-    
-    if training_args.report_to == ['wandb']:
-        os.environ["WANDB_PROJECT"] = training_args.run_name
-        wandb.init(project=training_args.run_name)
-        wandb.run_name = training_args.run_name
+
+    if local_rank == 0 and training_args.report_to == ['wandb']:
+        os.environ["WANDB_PROJECT"] = training_args.proj_name
+        # wandb.init(project=training_args.proj_name)
+        # wandb.run_name = training_args.run_name
+        wandb.init(project=training_args.proj_name, name=training_args.run_name)
     
     # 모델 load...
     model, processor = get_model('train', data_args, model_args, training_args)
     print(f'\nModel Parameter numbers: {sum(p.numel() for p in model.parameters() if p.requires_grad)}')
+
     
     # 데이터로더 load...
     data_module = get_dataset(training_args, model_args, data_args, processor=processor)
     
     # Trainer load...
-    metric = get_metric(model_args, data_args, processor, info='base')
+    metric = get_metric(model_args, data_args, processor, data_module, model, info='base')
+    # breakpoint()
     trainer = get_trainer(model_args, training_args, model, processor, data_module, metric)
+    
     
     # Trainer 학습 시작 및 저장...
     print("\n========== Visual Chain of Thought Train Start ==========\n")

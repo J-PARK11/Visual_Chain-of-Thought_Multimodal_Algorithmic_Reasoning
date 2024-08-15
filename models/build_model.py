@@ -14,6 +14,7 @@ def get_model(mode, data_args, model_args, training_args):
                                                   size= {"longest_edge": 448, "shortest_edge": 378},
                                                   use_DPR=data_args.USE_DPR)
         # 특별한 Image Processor가 필요함.
+        # breakpoint()
         if data_args.USE_DPR:
             from .Idefics2.modeling_DPR_idefics2 import Idefics2ForConditionalGeneration
             dpr_image_processor = Idefics2ImageProcessor(do_image_splitting=model_args.do_image_splitting,
@@ -56,10 +57,15 @@ def get_model(mode, data_args, model_args, training_args):
                                                                     torch_dtype=torch.bfloat16,
                                                                     quantization_config=BnB_config if model_args.USE_QLORA else None,
                                                                     max_length = model_args.max_length, # 20
+                                                                    # max_new_tokens=model_args.max_new_tokens,
                                                                     low_cpu_mem_usage=True
                                                                     # quantization_config=default_quantization_config
                                                                     # _attn_implementation="flash_attention_2"
-                                                                    )#.to(training_args.device)
+                                                                    )
+                model.generation_config.max_new_tokens = model_args.max_new_tokens
+                model.config.pad_token_id = processor.tokenizer.pad_token_id
+                # breakpoint()
+
             if model_args.USE_LORA :
                 if model_args.load_ckpt_path:
                     adapter_name = 'second_train'

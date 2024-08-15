@@ -29,7 +29,7 @@ class V_COT_SMART101_Dataset(Dataset):
             if args.task == 'custom':
                 self.puzzle_list = args.train_puzzle_list
                 puzzle_ids = self.puzzle_list.split(',')             
-            elif args.task in ['supervised', 'GT_with_rationale', 'GPT_paraphrasing', 'GPT_augmentation_train']:
+            elif args.task in ['supervised', 'GT_with_rationale', 'GPT_paraphrasing', 'GPT_augmentation_train']: #NOTE -> 이 task 사용중 
                 puzzle_ids = [f'{pz_id}' for pz_id in range(1,102)]
             elif args.task == 'GPT_augmentation_generation':
                 puzzle_ids = [f'{pz_id}' for pz_id in range(1,102)]
@@ -76,13 +76,13 @@ class V_COT_SMART101_Dataset(Dataset):
             with open(self.GPT_paraphrasing_dict_path,'r') as f:
                 self.GPT_paraphrasing_dict = json.load(f)        
           
-        # GPT Augmentation Train
+        # GPT Augmentation Train #NOTE -> 이거 사용
         if args.task == 'GPT_augmentation_train':
             
             self.level2_puzzle_list = ['2','19','23','28','44','46','50','56','89']
             self.level3_puzzle_list = ['13','16','17','24','39','40','43','51','54','58','80','93']
             
-            if args.gpt_data_include_level == 2:
+            if args.gpt_data_include_level == 2: #NOTE -> 이거 2여야 할 것 같은데? sh 파일엔 1로 되어있음
                 puzzle_ids = sorted(list(set(puzzle_ids) - set(self.level3_puzzle_list)))
             elif args.gpt_data_include_level == 1:
                 puzzle_ids = sorted(list(set(puzzle_ids) - set(self.level2_puzzle_list)))
@@ -131,11 +131,17 @@ class V_COT_SMART101_Dataset(Dataset):
             random.seed(1123)
             random.shuffle(self.qa_info)
             print('Train Dataset shuffled')
+        
+        self.pids = []
+        for each_info in self.qa_info:
+            self.pids.append(each_info["puzzle_id"])
+
             
     def ans_encode(self, answer):
         return ord(answer) - ord("A")
 
     def __getitem__(self, idx):
+        # breakpoint()
         info = self.qa_info[idx]
         pid = info["puzzle_id"]
         puzzle_root = pid + "/" + gv.puzzle_diff_str[self.diff] + "/"
@@ -174,7 +180,7 @@ class V_COT_SMART101_Dataset(Dataset):
         elif self.task=='GPT_augmentation_generation' and self.mode == 'train':
             ref_puzzle_name = self.GT_with_rationale_key_list[pid]
             option_answer = self.GT_with_rationale[ref_puzzle_name]['GT_with_Rationale']  
-        elif self.task=='GPT_augmentation_train' and self.mode == 'train':
+        elif self.task=='GPT_augmentation_train' and self.mode == 'train': #NOTE : train 시 여기로 들어옴
             rationale = self.GPT_augmentation_dict[im_name]['GT_with_Rationale']
             if len(rationale) < 1000:
                 option_answer = rationale
@@ -193,15 +199,18 @@ class V_COT_SMART101_Dataset(Dataset):
             else:
                 raise
         
+        # breakpoint()
         return im, im_path, torch.tensor(int(pid)), q_stn_out, opts, option_answer, torch.tensor(lbl), torch.tensor(answer)
+        # option_answer : 해설 -> 여기에 "Therefore, the answer is B=7." 문구까지 들어 있음
 
     def __len__(self):
         return len(self.qa_info)
 
-def V_COT_SMART_collate_fn(data):
+def V_COT_SMART_collate_fn(data): #NOTE 학습할 때 collator은 build_dataset.py의 collator
     """we use it only for val and test to load the options as a list"""
     concat = lambda data_list: torch.cat([x.unsqueeze(0) for x in data_list])
     im, im_p, pids, q_stn, opts, answer_option, lbl, answer = zip(*data)
+    breakpoint()
      # im = concat(im).float()
     pids = concat(pids)
     lbl = concat(lbl)
