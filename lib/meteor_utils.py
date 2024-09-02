@@ -7,6 +7,20 @@ import numpy as np
 from config import *
 import torch.nn.functional as F
 
+def check_num_of_parameters(mmamba, meteor):
+    mmamba_param = sum(p.numel() for p in mmamba.parameters())
+    mmamba_require_grad_param = sum(p.numel() for p in mmamba.parameters() if p.requires_grad)
+    mlm_param = sum(p.numel() for p in meteor.parameters())
+    mlm_require_grad_param = sum(p.numel() for p in meteor.parameters() if p.requires_grad)
+    
+    print(f'\nMeteor Whole Parameter: #{mmamba_param + mlm_param}')
+    print(f'Meteor mamba Parameter: #{mmamba_param}')
+    print(f'Meteor MLM Parameter: #{mlm_param}')
+    
+    print(f'\nMeteor Whole Require Grad Parameter: #{mmamba_require_grad_param + mlm_require_grad_param}')
+    print(f'Meteor mamba Require Grad Parameter: #{mmamba_require_grad_param}')
+    print(f'Meteor MLM Require Grad Parameter: #{mlm_require_grad_param}')
+    
 def memory_optimization():
     # memory deallocation
     gc.collect()

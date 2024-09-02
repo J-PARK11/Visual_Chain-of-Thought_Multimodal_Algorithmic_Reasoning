@@ -1,0 +1,2 @@
+CUDA_VISIBLE_DEVICES=0,1,2,3 python extract_features.py --img_type detr --output_dir ./data/vision_features/smart/
+CUDA_VISIBLE_DEVICES=0,1,2,3 python extract_features.py --img_type vit --output_dir ./data/vision_features/smart/

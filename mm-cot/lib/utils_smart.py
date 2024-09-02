@@ -16,7 +16,7 @@ import pandas as pd
 from PIL import Image
 import matplotlib.pyplot as plt
 
-import lib.V_COT_globvars as gv
+import lib.globvars_smart as gv
 import torch.distributed as dist
 
 def init_DDP():
